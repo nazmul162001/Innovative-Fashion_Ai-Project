@@ -1,0 +1,13 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero';
+import CollectionSection from '../components/CollectionSection';
+import { BRAND } from '../lib/brand';
+
+const category = Astro.url.searchParams.get('category') ?? 'men';
+---
+
+<Layout title={BRAND.name}>
+  <Hero client:load />
+  <CollectionSection client:load initialCategory={category} />
+</Layout>

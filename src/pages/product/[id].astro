@@ -1,0 +1,25 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ProductDetail from '../../components/ProductDetail';
+import { getProductById, getRelatedProducts, products } from '../../data/products';
+import { BRAND } from '../../lib/brand';
+
+export function getStaticPaths() {
+  return products.map((product) => ({
+    params: { id: product.id },
+  }));
+}
+
+const id = Astro.params.id;
+const product = getProductById(id ?? '');
+
+if (!product) {
+  throw new Error(`Unknown product: ${id ?? 'missing-id'}`);
+}
+
+const related = getRelatedProducts(product);
+---
+
+<Layout title={`${product.name} · ${BRAND.name}`} description={product.description}>
+  <ProductDetail client:load product={product} related={related} />
+</Layout>

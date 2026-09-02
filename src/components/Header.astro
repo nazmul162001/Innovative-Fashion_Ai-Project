@@ -1,0 +1,10 @@
+---
+import HeaderClient from './HeaderClient';
+
+const pathname = Astro.url.pathname;
+const search = Astro.url.search;
+---
+
+<div transition:persist="site-header">
+  <HeaderClient client:load pathname={pathname} search={search} />
+</div>

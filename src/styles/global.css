@@ -1,0 +1,166 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+
+  --color-dark-bg: #0f1218;
+  --color-dark-card: #161b22;
+  --color-dark-border: #21262d;
+  --color-dark-surface: #1c2128;
+  --color-accent-blue: #4f80ff;
+  --color-accent-cyan: #38bdf8;
+
+  --color-ink: #0f1218;
+  --color-ink-soft: #161b22;
+  --color-ink-mid: #1c2128;
+  --color-ink-lift: #21262d;
+  --color-line: #21262d;
+  --color-mist: #8b93a7;
+  --color-fog: #c5cad6;
+  --color-snow: #f4f6f8;
+  --color-signal: #4f80ff;
+  --color-signal-deep: #2563eb;
+  --color-steel: #4f80ff;
+  --color-card: #161b22;
+
+  --shadow-glow: 0 0 15px rgba(37, 99, 235, 0.4);
+  --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.37);
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: clip;
+}
+
+html,
+body {
+  min-height: 100%;
+  max-width: 100%;
+  color: var(--color-snow);
+  background-color: #0f1218;
+  background-image:
+    radial-gradient(circle at 75% 30%, rgba(56, 189, 248, 0.12) 0%, rgba(15, 18, 24, 0) 60%),
+    linear-gradient(180deg, #131720 0%, #0f1218 100%);
+  background-attachment: scroll;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+@media (min-width: 768px) {
+  html,
+  body {
+    background-attachment: fixed;
+  }
+}
+
+body {
+  font-family: var(--font-sans);
+  overflow-x: clip;
+}
+
+.hero-bg {
+  background-color: #0f1218;
+  background-image:
+    radial-gradient(circle at 75% 30%, rgba(56, 189, 248, 0.12) 0%, rgba(15, 18, 24, 0) 60%),
+    linear-gradient(180deg, #131720 0%, #0f1218 100%);
+}
+
+.studio-image-light {
+  filter: contrast(1.05) brightness(0.98) saturate(1.02) drop-shadow(0 10px 25px rgba(0, 0, 0, 0.45));
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.product-card:hover .studio-image-light {
+  filter: contrast(1.08) brightness(1.03) saturate(1.05) drop-shadow(0 10px 25px rgba(0, 0, 0, 0.45));
+  transform: scale(1.02);
+}
+
+.dark-card-glow {
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.ai-button-glow {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 0 0 15px rgba(37, 99, 235, 0.4);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.ai-button-glow:hover {
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.6);
+}
+
+button,
+a,
+select,
+summary,
+[role="button"],
+[role="tab"],
+.product-card {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+input[type="search"],
+input[type="text"],
+textarea {
+  cursor: text;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-accent-cyan) 40%, transparent);
+  color: white;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  height: 1.5rem;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #e8edf8;
+  border: 2px solid var(--color-accent-blue);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent-cyan) 18%, transparent);
+  cursor: pointer;
+  margin-top: -6px;
+  position: relative;
+  z-index: 2;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #e8edf8;
+  border: 2px solid var(--color-accent-blue);
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  background: transparent;
+}
+
+input[type="search"]::-webkit-search-cancel-button {
+  display: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
