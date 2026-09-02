@@ -20,4 +20,5 @@ Then open `http://localhost:4321`.
 ## Routes
 
 - `/` — homepage hero, collection filters, product grid
+- `/try-on` — virtual try-on studio, selfie upload, look carousels
 - `/product/[id]` — gallery, size/color, AI Try On modal, complete-the-look

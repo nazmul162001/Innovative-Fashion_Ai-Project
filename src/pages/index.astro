@@ -2,12 +2,27 @@
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero';
 import CollectionSection from '../components/CollectionSection';
+import SplashLoader from '../components/SplashLoader';
 import { BRAND } from '../lib/brand';
 
 const category = Astro.url.searchParams.get('category') ?? 'men';
 ---
 
 <Layout title={BRAND.name}>
+  <script is:inline slot="head">
+    (function () {
+      try {
+        var type = performance.getEntriesByType('navigation')[0] && performance.getEntriesByType('navigation')[0].type;
+        var seen = sessionStorage.getItem('if-home-visited');
+        if (type === 'reload' || !seen) {
+          document.documentElement.classList.add('if-splash');
+        }
+      } catch (e) {
+        document.documentElement.classList.add('if-splash');
+      }
+    })();
+  </script>
+  <SplashLoader client:only="react" />
   <Hero client:load />
   <CollectionSection client:load initialCategory={category} />
 </Layout>

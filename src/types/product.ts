@@ -60,5 +60,5 @@ export const NAV_LINKS = [
   { label: 'Women', href: '/?category=women#collection' },
   { label: 'Accessories', href: '/?category=accessories#collection' },
   { label: 'New Arrivals', href: '/?category=new#collection' },
-  { label: 'Try-On', href: '/product/aegis-active-jacket' },
+  { label: 'Try-On', href: '/try-on' },
 ] as const;

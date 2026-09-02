@@ -30,6 +30,7 @@ const { title, description = BRAND.description } = Astro.props;
       rel="stylesheet"
     />
     <title>{title}</title>
+    <slot name="head" />
     <ClientRouter />
   </head>
   <body class="hero-bg min-h-screen max-w-full overflow-x-clip font-sans text-snow antialiased">

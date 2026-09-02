@@ -49,8 +49,8 @@ export default function HeaderClient({ pathname, search }: HeaderClientProps) {
   }, [navOpen]);
 
   const isActive = (href: string) => {
-    if (href.includes('/product/aegis-active-jacket')) {
-      return pathname.includes('/product/aegis-active-jacket');
+    if (href.includes('/try-on')) {
+      return pathname.includes('/try-on');
     }
     if (href.includes('category=')) {
       const value = new URL(href, 'https://inovativefashion.com').searchParams.get('category');

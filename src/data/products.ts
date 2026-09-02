@@ -54,8 +54,8 @@ export const products: Product[] = [
     images: [
       unsplash('photo-1473966968600-fa801b869a1a'),
       unsplash('photo-1624378439575-d8705ad7ae80'),
-      unsplash('photo-1506629082955-511b1aa782c3'),
-      unsplash('photo-1594938291221-94d21d4d0b0c'),
+      unsplash('photo-1584865288642-42078afe6942'),
+      unsplash('photo-1552374196-1ab2a1c593e8'),
     ],
     fabricCare: '96% cotton, 4% elastane. Machine wash cold. Steam to restore the crease.',
     shipping: 'Ships in 24 hours. Free exchanges on size within 14 days.',
@@ -85,7 +85,7 @@ export const products: Product[] = [
     images: [
       unsplash('photo-1596755094514-f87e34085b2c'),
       unsplash('photo-1602810318383-e386cc2a3ccf'),
-      unsplash('photo-1598033122183-b21f0adb3244'),
+      unsplash('photo-1602810316693-3667c854239a'),
       unsplash('photo-1621072156002-e2fccdc0b176'),
     ],
     fabricCare: '100% organic cotton poplin. Wash cold, hang dry, light iron if needed.',
@@ -146,7 +146,7 @@ export const products: Product[] = [
     colors: [charcoal, signal, sand, crimson, ash],
     images: [
       unsplash('photo-1591047139829-d91aecb6caea'),
-      unsplash('photo-1611312449408-fce111572157'),
+      unsplash('photo-1617127365659-c47fa864d8bc'),
       unsplash('photo-1551028719-00167b16eac5'),
       unsplash('photo-1544022613-e87ca75a784a'),
     ],
@@ -185,7 +185,7 @@ export const products: Product[] = [
     colors: [charcoal, signal, sand],
     images: [
       unsplash('photo-1618354691373-d851c5c3a990'),
-      unsplash('photo-1625910513391-c98e0ddb2808'),
+      unsplash('photo-1586363104862-3a5e2ab60d99'),
       unsplash('photo-1617137968427-85924c800a22'),
       unsplash('photo-1593032465175-481ac7f401a0'),
     ],
@@ -216,7 +216,7 @@ export const products: Product[] = [
     colors: [charcoal, sand, ash],
     images: [
       unsplash('photo-1593030761757-71fae45fa0e7'),
-      unsplash('photo-1611312449408-fce111572157'),
+      unsplash('photo-1617127365659-c47fa864d8bc'),
       unsplash('photo-1495105787522-5334e3ffa0ef'),
       unsplash('photo-1603252109303-2751441dd157'),
     ],
@@ -308,7 +308,7 @@ export const products: Product[] = [
     sizes: [...allSizes],
     colors: [charcoal, sand, ash],
     images: [
-      unsplash('photo-1506629082955-511b1aa782c3'),
+      unsplash('photo-1584865288642-42078afe6942'),
       unsplash('photo-1594633312681-425c7b97ccd1'),
       unsplash('photo-1515372039744-b8f02a3ae446'),
       unsplash('photo-1483985988355-763728e1935b'),
@@ -339,7 +339,7 @@ export const products: Product[] = [
     sizes: [...allSizes],
     colors: [sand, charcoal, ash],
     images: [
-      unsplash('photo-1521223890158-f9f7c3d6d4ed'),
+      unsplash('photo-1520975916090-3105956dac38'),
       unsplash('photo-1544022613-e87ca75a784a'),
       unsplash('photo-1483985988355-763728e1935b'),
       unsplash('photo-1490481651871-ab68de25d43d'),
@@ -371,7 +371,7 @@ export const products: Product[] = [
     colors: [charcoal, crimson, sand],
     images: [
       unsplash('photo-1543163521-1bf539c55dd2'),
-      unsplash('photo-1515347619252-60a6bfc73e1e'),
+      unsplash('photo-1535043934128-cf0b28d52f95'),
       unsplash('photo-1543163521-1bf539c55dd2', 800),
       unsplash('photo-1518049362265-d5b2a6467637'),
     ],
@@ -401,10 +401,10 @@ export const products: Product[] = [
     sizes: ['S', 'M', 'L', 'XL'],
     colors: [charcoal, sand, crimson],
     images: [
-      unsplash('photo-1624222247344-550fb60583c2'),
-      unsplash('photo-1553062407-98eeb64c6a31'),
-      unsplash('photo-1669013702040-86c5ed1cb5ad'),
-      unsplash('photo-1594223275300-2d9855bf1d0b'),
+      unsplash('photo-1684510334550-0c4fa8aaffd1'),
+      unsplash('photo-1664286074176-5206ee5dc878'),
+      unsplash('photo-1625789250576-9efae40f4689'),
+      unsplash('photo-1565251419287-9097aa7299ec'),
     ],
     fabricCare: 'Full-grain leather. Condition twice a year.',
     shipping: 'Ships in 24 hours.',
@@ -432,10 +432,10 @@ export const products: Product[] = [
     sizes: ['S', 'M', 'L'],
     colors: [charcoal, ash, signal],
     images: [
-      unsplash('photo-1588850561407-42e62b481b64'),
+      unsplash('photo-1556306535-0f09a537f0a3'),
       unsplash('photo-1521369909029-2afed882baee'),
       unsplash('photo-1576871337622-98d48d1cf531'),
-      unsplash('photo-1588850561407-42e62b481b64', 800),
+      unsplash('photo-1556306535-0f09a537f0a3', 800),
     ],
     fabricCare: 'Cotton twill. Spot clean.',
     shipping: 'Always free.',

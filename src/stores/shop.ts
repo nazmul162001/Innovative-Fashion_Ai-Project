@@ -104,8 +104,8 @@ export const toastMessage = atom<string | null>(null);
 
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
 
-export function showToast(message: string): void {
+export function showToast(message: string, durationMs = 2200): void {
   toastMessage.set(message);
   if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toastMessage.set(null), 2200);
+  toastTimer = setTimeout(() => toastMessage.set(null), durationMs);
 }

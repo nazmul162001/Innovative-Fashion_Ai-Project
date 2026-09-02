@@ -27,9 +27,18 @@
   --shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.37);
 }
 
-html {
-  scroll-behavior: smooth;
-  overflow-x: clip;
+html.if-splash,
+html.if-splash body {
+  overflow: hidden;
+}
+
+html.if-splash body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: #0f1218;
+  pointer-events: none;
 }
 
 html,
@@ -163,4 +172,34 @@ input[type="search"]::-webkit-search-cancel-button {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@keyframes tryon-aurora {
+  0% {
+    background-position: 0% 40%;
+  }
+  50% {
+    background-position: 100% 60%;
+  }
+  100% {
+    background-position: 0% 40%;
+  }
+}
+
+.tryon-loading-aurora {
+  background-image:
+    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(56, 189, 248, 0.35), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 80% 10%, rgba(79, 128, 255, 0.4), transparent 50%),
+    radial-gradient(ellipse 60% 70% at 70% 85%, rgba(99, 102, 241, 0.32), transparent 55%),
+    radial-gradient(ellipse 50% 50% at 15% 80%, rgba(14, 165, 233, 0.22), transparent 50%),
+    linear-gradient(160deg, #141824 0%, #1c2740 40%, #243056 70%, #1a2030 100%);
+  background-size: 180% 180%, 160% 160%, 200% 200%, 140% 140%, 100% 100%;
+  animation: tryon-aurora 9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tryon-loading-aurora {
+    animation: none;
+    background-position: 50% 50%;
+  }
 }
