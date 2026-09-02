@@ -1,5 +1,6 @@
 import { atom, computed, map } from 'nanostores';
 import type { Product } from '../types/product';
+import { getProductPricing } from '../lib/utils';
 
 export interface CartItem {
   key: string;
@@ -29,12 +30,13 @@ export function addToCart(
   const quantity = options.quantity ?? 1;
   const key = `${product.id}-${options.size}-${options.color}`;
   const existing = cartItems.get()[key];
+  const { sale } = getProductPricing(product);
 
   cartItems.setKey(key, {
     key,
     productId: product.id,
     name: product.name,
-    price: product.price,
+    price: sale,
     image: product.images[0] ?? '',
     size: options.size,
     color: options.color,

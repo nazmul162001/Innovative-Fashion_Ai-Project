@@ -47,19 +47,18 @@ body {
   max-width: 100%;
   color: var(--color-snow);
   background-color: #0f1218;
+}
+
+html::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-color: #0f1218;
   background-image:
     radial-gradient(circle at 75% 30%, rgba(56, 189, 248, 0.12) 0%, rgba(15, 18, 24, 0) 60%),
     linear-gradient(180deg, #131720 0%, #0f1218 100%);
-  background-attachment: scroll;
-  background-repeat: no-repeat;
-  background-size: cover;
-}
-
-@media (min-width: 768px) {
-  html,
-  body {
-    background-attachment: fixed;
-  }
 }
 
 body {
@@ -68,20 +67,16 @@ body {
 }
 
 .hero-bg {
-  background-color: #0f1218;
-  background-image:
-    radial-gradient(circle at 75% 30%, rgba(56, 189, 248, 0.12) 0%, rgba(15, 18, 24, 0) 60%),
-    linear-gradient(180deg, #131720 0%, #0f1218 100%);
+  background-color: transparent;
 }
 
 .studio-image-light {
-  filter: contrast(1.05) brightness(0.98) saturate(1.02) drop-shadow(0 10px 25px rgba(0, 0, 0, 0.45));
-  transition: filter 0.3s ease, transform 0.3s ease;
+  filter: contrast(1.04) brightness(0.98) saturate(1.02);
 }
 
-.product-card:hover .studio-image-light {
-  filter: contrast(1.08) brightness(1.03) saturate(1.05) drop-shadow(0 10px 25px rgba(0, 0, 0, 0.45));
-  transform: scale(1.02);
+.product-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
 }
 
 .dark-card-glow {

@@ -3,6 +3,7 @@ import { Minus, Plus, X } from 'lucide-react';
 import { useStore } from '@nanostores/react';
 import { products } from '../data/products';
 import { formatPrice } from '../lib/utils';
+import { PriceDisplay } from './PriceDisplay';
 import {
   cartItems,
   cartTotal,
@@ -125,7 +126,7 @@ export default function Drawers() {
                         <a href={`/product/${product.id}`} className="text-sm font-medium">
                           {product.name}
                         </a>
-                        <p className="text-xs text-mist">{formatPrice(product.price)}</p>
+                        <PriceDisplay product={product} className="mt-0.5" />
                         <button
                           type="button"
                           className="mt-2 text-xs text-mist hover:text-snow"

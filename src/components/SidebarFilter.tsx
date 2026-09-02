@@ -35,7 +35,7 @@ export default function SidebarFilter({ draft, onChange, onApply }: SidebarFilte
   };
 
   return (
-    <aside className="dark-card-glow rounded-2xl p-5">
+    <aside className="dark-card-glow max-h-screen overflow-y-auto rounded-2xl p-6">
       <FilterLabel>Price</FilterLabel>
       <PriceRangeSlider
         min={PRICE_BOUNDS.min}
@@ -66,7 +66,7 @@ export default function SidebarFilter({ draft, onChange, onApply }: SidebarFilte
       </div>
 
       <FilterLabel className="mt-6">Size</FilterLabel>
-      <div className="mt-3 grid grid-cols-4 gap-2">
+      <div className="mt-3 grid grid-cols-5 gap-2">
         {SIZES.map((size) => {
           const selected = draft.sizes.includes(size);
           return (
@@ -88,7 +88,7 @@ export default function SidebarFilter({ draft, onChange, onApply }: SidebarFilte
       </div>
 
       <FilterLabel className="mt-6">Fit</FilterLabel>
-      <div className="mt-3 grid grid-cols-2 gap-2">
+      <div className="mt-3 grid grid-cols-3 gap-2">
         {FIT_OPTIONS.map((option) => {
           const selected = draft.fits.includes(option.value);
           return (

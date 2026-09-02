@@ -45,7 +45,7 @@ export interface FilterState {
   fits: Fit[];
 }
 
-export const PRICE_BOUNDS = { min: 30, max: 150 } as const;
+export const PRICE_BOUNDS = { min: 1000, max: 12000 } as const;
 
 export const COLOR_SWATCHES: ColorSwatch[] = [
   { name: 'Charcoal', hex: '#2C3038' },

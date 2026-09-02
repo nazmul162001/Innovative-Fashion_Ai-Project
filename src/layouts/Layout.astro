@@ -34,6 +34,40 @@ const { title, description = BRAND.description } = Astro.props;
     <ClientRouter />
   </head>
   <body class="hero-bg min-h-screen max-w-full overflow-x-clip font-sans text-snow antialiased">
+    <script is:inline>
+      document.addEventListener(
+        'click',
+        function (event) {
+          if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+          var target = event.target;
+          var anchor = target && target.closest ? target.closest('a') : null;
+          if (!anchor) return;
+          var href = anchor.getAttribute('href');
+          if (!href) return;
+          var url;
+          try {
+            url = new URL(href, location.href);
+          } catch (err) {
+            return;
+          }
+          if (url.origin !== location.origin || url.pathname !== '/' || location.pathname !== '/') return;
+          event.preventDefault();
+          event.stopPropagation();
+          var category = url.searchParams.get('category') || 'all';
+          var next = url.pathname + url.search + url.hash;
+          var current = location.pathname + location.search + location.hash;
+          if (next !== current) history.pushState({ category: category }, '', next);
+          window.dispatchEvent(new CustomEvent('if:category', { detail: category }));
+          if (url.hash) {
+            var el = document.getElementById(url.hash.slice(1));
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          } else if (!url.search) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        },
+        true,
+      );
+    </script>
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-[90] focus:rounded-lg focus:bg-signal focus:px-3 focus:py-2"

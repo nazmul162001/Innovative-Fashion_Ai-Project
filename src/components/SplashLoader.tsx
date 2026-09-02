@@ -1,38 +1,21 @@
 import { useLayoutEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { BRAND } from '../lib/brand';
-
-const SESSION_KEY = 'if-home-visited';
-
-function shouldPlaySplash(): boolean {
-  if (typeof window === 'undefined') return true;
-  try {
-    const type = performance.getEntriesByType('navigation')[0]?.type;
-    if (type === 'reload') return true;
-    return sessionStorage.getItem(SESSION_KEY) !== '1';
-  } catch {
-    return true;
-  }
-}
+import { markHomeVisited, shouldPlaySplash } from '../lib/splash';
 
 const wordmark = BRAND.name.toUpperCase();
 
 export default function SplashLoader() {
   const reduceMotion = useReducedMotion();
-  const [play, setPlay] = useState(true);
+  const [play, setPlay] = useState(() => shouldPlaySplash());
 
   useLayoutEffect(() => {
-    if (!shouldPlaySplash()) {
-      setPlay(false);
+    if (!play) {
       document.documentElement.classList.remove('if-splash');
       return;
     }
     document.documentElement.classList.add('if-splash');
-    try {
-      sessionStorage.setItem(SESSION_KEY, '1');
-    } catch {
-      /* ignore */
-    }
+    markHomeVisited();
 
     const hold = reduceMotion ? 600 : 2800;
     const hide = window.setTimeout(() => {
@@ -40,7 +23,7 @@ export default function SplashLoader() {
       document.documentElement.classList.remove('if-splash');
     }, hold);
     return () => window.clearTimeout(hide);
-  }, [reduceMotion]);
+  }, [play, reduceMotion]);
 
   return (
     <AnimatePresence>

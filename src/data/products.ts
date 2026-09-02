@@ -13,7 +13,7 @@ export const products: Product[] = [
   {
     id: 'aetheric-knit-tee',
     name: 'Aetheric Knit Tee',
-    price: 48,
+    price: 2490,
     description:
       'A merino-blend crewneck with a quiet drape and thermal memory. Engineered for all-day wear under jackets or solo.',
     category: 'men',
@@ -44,7 +44,7 @@ export const products: Product[] = [
   {
     id: 'nebula-chinos',
     name: 'Nebula Chinos',
-    price: 75,
+    price: 3890,
     description:
       'Tapered technical chinos with four-way stretch and a crease that actually holds. Built for movement, cut for evenings.',
     category: 'men',
@@ -75,7 +75,7 @@ export const products: Product[] = [
   {
     id: 'nebula-shirt',
     name: 'Nebula Shirt',
-    price: 75,
+    price: 3690,
     description:
       'A crisp poplin shirt with a hidden placket and slightly elongated cuff. Minimal hardware, maximum signal.',
     category: 'men',
@@ -106,7 +106,7 @@ export const products: Product[] = [
   {
     id: 'aetheric-shoes',
     name: 'Aetheric Shoes',
-    price: 45,
+    price: 4290,
     description:
       'Low-profile court sneakers with a cushioned footbed and matte upper. Quiet luxury for city miles.',
     category: 'men',
@@ -120,7 +120,7 @@ export const products: Product[] = [
       unsplash('photo-1608231387042-66d1773070a5'),
     ],
     fabricCare: 'Leather and recycled mesh. Wipe clean. Avoid soaking.',
-    shipping: 'Free shipping over $40. 14-day trial period.',
+    shipping: 'Free shipping over ৳২,০০০. 14-day trial period.',
     reviews: [
       {
         id: 'r4',
@@ -137,7 +137,7 @@ export const products: Product[] = [
   {
     id: 'aegis-active-jacket',
     name: 'Aegis Active Jacket',
-    price: 110,
+    price: 7990,
     description:
       'A weather-ready hooded shell with bonded seams, articulated sleeves, and an interior that regulates heat without bulk. Designed to layer over knits and under wool.',
     category: 'men',
@@ -176,7 +176,7 @@ export const products: Product[] = [
   {
     id: 'orbit-merino-polo',
     name: 'Orbit Merino Polo',
-    price: 62,
+    price: 3290,
     description:
       'Fine-gauge merino polo with a clean placket and temperature-aware knit. Desk to dinner without a costume change.',
     category: 'men',
@@ -207,7 +207,7 @@ export const products: Product[] = [
   {
     id: 'pulse-overshirt',
     name: 'Pulse Overshirt',
-    price: 88,
+    price: 4590,
     description:
       'A structured overshirt in brushed twill. Wear it open as a layer or closed as a light jacket.',
     category: 'men',
@@ -238,7 +238,7 @@ export const products: Product[] = [
   {
     id: 'helix-runner',
     name: 'Helix Runner',
-    price: 95,
+    price: 6490,
     description:
       'A sculpted runner with energy-return foam and a knit upper that maps to your stride. Night-reflective hits.',
     category: 'men',
@@ -269,7 +269,7 @@ export const products: Product[] = [
   {
     id: 'lumen-silk-blouse',
     name: 'Lumen Silk Blouse',
-    price: 92,
+    price: 5490,
     description:
       'Fluid silk with a concealed button line and a neckline that frames without fuss. Evening-ready, office-capable.',
     category: 'women',
@@ -300,7 +300,7 @@ export const products: Product[] = [
   {
     id: 'nova-wide-leg',
     name: 'Nova Wide Leg',
-    price: 98,
+    price: 4790,
     description:
       'Full-length trousers with a floating crease and elastic-free waist that still holds. Architecture you can walk in.',
     category: 'women',
@@ -331,7 +331,7 @@ export const products: Product[] = [
   {
     id: 'veil-trench',
     name: 'Veil Trench',
-    price: 140,
+    price: 9990,
     description:
       'A shortened trench with a magnetic closure and water-shedding cotton. The collar sits like a sculpture.',
     category: 'women',
@@ -362,7 +362,7 @@ export const products: Product[] = [
   {
     id: 'signal-heel',
     name: 'Signal Heel',
-    price: 120,
+    price: 6990,
     description:
       'A sculpted 70mm heel with a squared toe and matte leather. Designed to disappear under wide-leg trousers.',
     category: 'women',
@@ -393,7 +393,7 @@ export const products: Product[] = [
   {
     id: 'quantum-belt',
     name: 'Quantum Belt',
-    price: 38,
+    price: 1890,
     description:
       'Vegetable-tanned leather with a brushed hardware buckle. Ages darker with every commute.',
     category: 'accessories',
@@ -424,7 +424,7 @@ export const products: Product[] = [
   {
     id: 'halo-cap',
     name: 'Halo Cap',
-    price: 32,
+    price: 1290,
     description:
       'Unstructured six-panel cap in washed cotton with a subtle reflective stitch under the brim.',
     category: 'accessories',
@@ -466,7 +466,7 @@ export function getRelatedProducts(product: Product): Product[] {
 
 export function getProductsByCategory(category: string | null): Product[] {
   if (!category || category === 'all') {
-    return products.filter((product) => product.featured);
+    return products;
   }
   if (category === 'new') {
     return products.filter((product) => product.isNew);
@@ -479,5 +479,5 @@ export const collectionTitles: Record<string, string> = {
   women: "Women's Collection",
   accessories: 'Accessories',
   new: 'New Arrivals',
-  all: "Men's Collection",
+  all: 'The Collection',
 };

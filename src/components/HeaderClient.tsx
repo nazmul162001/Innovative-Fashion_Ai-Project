@@ -24,8 +24,14 @@ export default function HeaderClient({ pathname, search }: HeaderClientProps) {
   useEffect(() => {
     const sync = () => setCategory(new URLSearchParams(window.location.search).get('category'));
     sync();
+    window.addEventListener('if:category', sync);
+    window.addEventListener('popstate', sync);
     document.addEventListener('astro:page-load', sync);
-    return () => document.removeEventListener('astro:page-load', sync);
+    return () => {
+      window.removeEventListener('if:category', sync);
+      window.removeEventListener('popstate', sync);
+      document.removeEventListener('astro:page-load', sync);
+    };
   }, [search]);
   const navOpen = drawer === 'nav';
 
@@ -60,7 +66,7 @@ export default function HeaderClient({ pathname, search }: HeaderClientProps) {
   };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-dark-border/80 bg-dark-bg/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-dark-border/80 bg-dark-bg/85 backdrop-blur-md">
       <div className="mx-auto flex w-full min-w-0 max-w-7xl items-center gap-1.5 px-3 py-3 sm:gap-4 sm:px-4 md:px-6">
         <button
           type="button"

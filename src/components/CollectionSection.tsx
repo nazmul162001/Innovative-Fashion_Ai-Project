@@ -4,9 +4,11 @@ import { SlidersHorizontal, X } from 'lucide-react';
 import { collectionTitles, getProductsByCategory } from '../data/products';
 import type { FilterState, Product } from '../types/product';
 import { PRICE_BOUNDS } from '../types/product';
-import { formatPrice } from '../lib/utils';
+import { getProductPricing } from '../lib/utils';
 import { addToCart } from '../stores/shop';
+import { CATEGORY_EVENT, readCollectionCategory } from '../lib/collection-nav';
 import ProductCard from './ProductCard';
+import { DiscountBadge, PriceDisplay } from './PriceDisplay';
 import SidebarFilter from './SidebarFilter';
 
 const defaultDraft: FilterState = {
@@ -35,23 +37,33 @@ export default function CollectionSection({ initialCategory }: CollectionSection
   const [sort, setSort] = useState<SortId>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quickView, setQuickView] = useState<Product | null>(null);
-  const [category, setCategory] = useState(initialCategory || 'men');
+  const [category, setCategory] = useState(initialCategory || 'all');
 
   useEffect(() => {
-    const syncCategory = () => {
-      const params = new URLSearchParams(window.location.search);
-      setCategory(params.get('category') ?? (initialCategory || 'men'));
-    };
-    syncCategory();
-    document.addEventListener('astro:page-load', syncCategory);
-    return () => document.removeEventListener('astro:page-load', syncCategory);
-  }, [initialCategory]);
+    const syncCategory = () => setCategory(readCollectionCategory());
 
-  const title = collectionTitles[category] ?? collectionTitles.men;
+    const onCategory = (event: Event) => {
+      const next = (event as CustomEvent<string>).detail;
+      setCategory(next || 'all');
+    };
+
+    syncCategory();
+    window.addEventListener(CATEGORY_EVENT, onCategory);
+    window.addEventListener('popstate', syncCategory);
+    document.addEventListener('astro:page-load', syncCategory);
+    return () => {
+      window.removeEventListener(CATEGORY_EVENT, onCategory);
+      window.removeEventListener('popstate', syncCategory);
+      document.removeEventListener('astro:page-load', syncCategory);
+    };
+  }, []);
+
+  const title = collectionTitles[category] ?? collectionTitles.all;
 
   const items = useMemo(() => {
     let next = getProductsByCategory(category).filter((product) => {
-      const inPrice = product.price >= applied.price[0] && product.price <= applied.price[1];
+      const sale = getProductPricing(product).sale;
+      const inPrice = sale >= applied.price[0] && sale <= applied.price[1];
       const inColor =
         applied.colors.length === 0 || product.colors.some((color) => applied.colors.includes(color.name));
       const inSize = applied.sizes.length === 0 || product.sizes.some((size) => applied.sizes.includes(size));
@@ -59,8 +71,8 @@ export default function CollectionSection({ initialCategory }: CollectionSection
       return inPrice && inColor && inSize && inFit;
     });
 
-    if (sort === 'price-asc') next = [...next].sort((a, b) => a.price - b.price);
-    if (sort === 'price-desc') next = [...next].sort((a, b) => b.price - a.price);
+    if (sort === 'price-asc') next = [...next].sort((a, b) => getProductPricing(a).sale - getProductPricing(b).sale);
+    if (sort === 'price-desc') next = [...next].sort((a, b) => getProductPricing(b).sale - getProductPricing(a).sale);
     if (sort === 'new') next = [...next].sort((a, b) => Number(b.isNew) - Number(a.isNew));
     return next;
   }, [applied, category, sort]);
@@ -71,10 +83,12 @@ export default function CollectionSection({ initialCategory }: CollectionSection
   };
 
   return (
-    <section id="collection" className="mx-auto w-full min-w-0 max-w-7xl px-4 py-6 md:px-6">
-      <div className="mb-6 flex min-w-0 flex-wrap items-end justify-between gap-3">
-        <h2 className="min-w-0 flex-1 text-xl font-bold tracking-tight break-words text-snow uppercase sm:text-2xl md:text-3xl">{title}</h2>
-        <div className="flex shrink-0 items-center gap-2">
+    <section id="collection" className="mx-auto w-full min-w-0 max-w-7xl px-4 py-16 md:px-6 md:py-24">
+      <div className="sticky top-0 z-30 -mx-4 mb-6 flex flex-col gap-3 bg-[#0f1218]/95 px-4 py-3 backdrop-blur-md lg:static lg:z-auto lg:mx-0 lg:flex-row lg:items-end lg:justify-between lg:gap-3 lg:bg-transparent lg:px-0 lg:py-0 lg:backdrop-blur-none">
+        <h2 className="w-full text-left text-xl font-bold tracking-tight whitespace-nowrap text-snow uppercase sm:text-2xl md:text-3xl lg:w-auto">
+          {title}
+        </h2>
+        <div className="flex w-full shrink-0 items-center justify-end gap-2 lg:w-auto">
           <button
             type="button"
             className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs text-fog lg:hidden"
@@ -100,9 +114,11 @@ export default function CollectionSection({ initialCategory }: CollectionSection
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] xl:grid-cols-[300px_minmax(0,1fr)]">
         <div className="hidden lg:block">
-          <SidebarFilter draft={draft} onChange={setDraft} onApply={apply} />
+          <div className="sticky top-0 z-20 self-start">
+            <SidebarFilter draft={draft} onChange={setDraft} onApply={apply} />
+          </div>
         </div>
         <div>
           {items.length === 0 ? (
@@ -159,13 +175,16 @@ export default function CollectionSection({ initialCategory }: CollectionSection
               exit={{ scale: 0.96, opacity: 0 }}
               className="relative grid w-full max-w-2xl overflow-hidden rounded-3xl border border-white/10 bg-ink-soft md:grid-cols-2"
             >
-              <img src={quickView.images[0]} alt={quickView.name} className="h-64 w-full object-cover md:h-full" />
+              <div className="relative">
+                <img src={quickView.images[0]} alt={quickView.name} className="h-64 w-full object-cover md:h-full" />
+                <DiscountBadge percent={getProductPricing(quickView).discountPercent} />
+              </div>
               <div className="p-6">
                 <button type="button" className="absolute top-4 right-4" onClick={() => setQuickView(null)} aria-label="Close">
                   <X size={18} />
                 </button>
                 <h3 className="text-xl font-semibold">{quickView.name}</h3>
-                <p className="mt-1 text-mist">{formatPrice(quickView.price)}</p>
+                <PriceDisplay product={quickView} size="md" className="mt-1" />
                 <p className="mt-3 text-sm leading-relaxed text-mist">{quickView.description}</p>
                 <div className="mt-6 flex gap-3">
                   <button

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, Sparkles } from 'lucide-react';
 import type { Product, Size } from '../types/product';
-import { cn, formatPrice } from '../lib/utils';
+import { cn } from '../lib/utils';
+import { PriceDisplay } from './PriceDisplay';
 import { addToCart } from '../stores/shop';
 
 interface ProductSelectionPanelProps {
@@ -30,7 +31,7 @@ export default function ProductSelectionPanel({ product, onTryOn }: ProductSelec
       <h1 className="text-3xl font-bold tracking-tight text-snow uppercase md:text-[34px] md:leading-tight">
         {product.name}
       </h1>
-      <p className="mt-3 text-2xl font-medium text-snow">{formatPrice(product.price)}</p>
+      <PriceDisplay product={product} size="lg" className="mt-3" />
       <p className="mt-4 max-w-md text-sm leading-relaxed text-[#9CA3AF]">{product.description}</p>
 
       <p className="mt-8 text-xs font-medium tracking-[0.18em] text-[#9CA3AF] uppercase">Size</p>

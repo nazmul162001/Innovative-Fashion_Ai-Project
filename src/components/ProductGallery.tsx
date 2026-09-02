@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { cn } from '../lib/utils';
+import { cn, getProductPricing } from '../lib/utils';
+import { DiscountBadge } from './PriceDisplay';
 
 interface ProductGalleryProps {
   name: string;
   images: string[];
+  productId: string;
 }
 
-export default function ProductGallery({ name, images }: ProductGalleryProps) {
+export default function ProductGallery({ name, images, productId }: ProductGalleryProps) {
   const [active, setActive] = useState(0);
   const current = images[active] ?? images[0] ?? '';
+  const { discountPercent } = getProductPricing({ id: productId, price: 0 });
 
   return (
     <div>
@@ -26,6 +29,7 @@ export default function ProductGallery({ name, images }: ProductGalleryProps) {
             className="studio-image-light aspect-square w-full object-cover"
           />
         </AnimatePresence>
+        <DiscountBadge percent={discountPercent} />
       </div>
       <div className="mt-3 grid grid-cols-4 gap-3">
         {images.slice(0, 4).map((image, index) => (

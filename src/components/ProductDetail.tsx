@@ -16,7 +16,7 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
   return (
     <div className="mx-auto w-full min-w-0 max-w-7xl px-4 py-8 md:px-6 md:py-12">
       <div className="grid items-start gap-6 lg:grid-cols-2 lg:gap-8">
-        <ProductGallery name={product.name} images={product.images} />
+        <ProductGallery name={product.name} images={product.images} productId={product.id} />
         <ProductSelectionPanel product={product} onTryOn={() => setTryOnOpen(true)} />
       </div>
       <CompleteTheLook items={[product, ...related].slice(0, 4)} />

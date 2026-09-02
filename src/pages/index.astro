@@ -1,28 +1,44 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero';
+import HowItWorks from '../components/home/HowItWorks';
+import TryOnSpotlight from '../components/home/TryOnSpotlight';
+import ShopByIntent from '../components/home/ShopByIntent';
 import CollectionSection from '../components/CollectionSection';
+import AtelierLooks from '../components/home/AtelierLooks';
+import FitConfidence from '../components/home/FitConfidence';
 import SplashLoader from '../components/SplashLoader';
 import { BRAND } from '../lib/brand';
 
-const category = Astro.url.searchParams.get('category') ?? 'men';
+const category = Astro.url.searchParams.get('category') ?? 'all';
 ---
 
 <Layout title={BRAND.name}>
   <script is:inline slot="head">
     (function () {
       try {
-        var type = performance.getEntriesByType('navigation')[0] && performance.getEntriesByType('navigation')[0].type;
-        var seen = sessionStorage.getItem('if-home-visited');
-        if (type === 'reload' || !seen) {
+        if (window.__ifSplashShown) {
+          document.documentElement.classList.remove('if-splash');
+          return;
+        }
+        window.__ifDocNavType = window.__ifDocNavType || (performance.getEntriesByType('navigation')[0] && performance.getEntriesByType('navigation')[0].type);
+        window.__ifOriginalPath = window.__ifOriginalPath || location.pathname;
+        var path = location.pathname;
+        if (path !== '/' && path !== '') return;
+        var seen = sessionStorage.getItem('if-home-visited') === '1';
+        var reloadedHome = window.__ifDocNavType === 'reload' && (window.__ifOriginalPath === '/' || window.__ifOriginalPath === '');
+        if (!seen || reloadedHome) {
           document.documentElement.classList.add('if-splash');
         }
-      } catch (e) {
-        document.documentElement.classList.add('if-splash');
-      }
+      } catch (e) {}
     })();
   </script>
   <SplashLoader client:only="react" />
   <Hero client:load />
   <CollectionSection client:load initialCategory={category} />
+  <HowItWorks client:visible />
+  <TryOnSpotlight client:visible />
+  <ShopByIntent client:visible />
+  <AtelierLooks client:visible />
+  <FitConfidence client:visible />
 </Layout>

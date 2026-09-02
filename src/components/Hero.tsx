@@ -125,7 +125,7 @@ export default function Hero() {
         </div>
       </div>
 
-      <div className="flex justify-center gap-2 pb-6" role="tablist" aria-label="Hero slides">
+      <div className="flex justify-center gap-2 pb-10 md:pb-14" role="tablist" aria-label="Hero slides">
         {slides.map((item, slideIndex) => {
           const active = slideIndex === index;
           return (

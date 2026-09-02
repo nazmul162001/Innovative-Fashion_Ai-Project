@@ -1,4 +1,4 @@
-import { cn } from '../lib/utils';
+import { cn, formatPrice } from '../lib/utils';
 
 interface PriceRangeSliderProps {
   min: number;
@@ -47,8 +47,8 @@ export default function PriceRangeSlider({ min, max, value, onChange }: PriceRan
         />
       </div>
       <div className="mt-2 flex justify-between text-xs text-mist">
-        <span className={cn('tabular-nums')}>${from}</span>
-        <span className="tabular-nums">${to}</span>
+        <span className={cn('tabular-nums')}>{formatPrice(from)}</span>
+        <span className="tabular-nums">{formatPrice(to)}</span>
       </div>
     </div>
   );
