@@ -6,6 +6,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Drawers from '../components/Drawers';
 import Toaster from '../components/Toaster';
+import InstallPrompt from '../components/InstallPrompt';
 
 interface Props {
   title: string;
@@ -19,8 +20,16 @@ const { title, description = BRAND.description } = Astro.props;
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0F1218" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content={BRAND.short} />
+    <meta name="application-name" content={BRAND.short} />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -81,5 +90,6 @@ const { title, description = BRAND.description } = Astro.props;
     <Footer />
     <Drawers client:load />
     <Toaster client:load />
+    <InstallPrompt client:only="react" />
   </body>
 </html>
