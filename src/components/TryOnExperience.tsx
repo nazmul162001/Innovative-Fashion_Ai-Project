@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronUp, X } from 'lucide-react';
 import { useStore } from '@nanostores/react';
@@ -34,7 +34,9 @@ export default function TryOnExperience() {
   const [lookSession, setLookSession] = useState<LookItem | null>(null);
   const [dockDismissed, setDockDismissed] = useState(false);
   const [step, setStep] = useState<TryOnStep>('upload');
-  const fileInput = useRef<HTMLInputElement>(null);
+  const galleryInput = useRef<HTMLInputElement>(null);
+  const cameraInput = useRef<HTMLInputElement>(null);
+  const dockPointer = useRef<{ y: number; moved: boolean } | null>(null);
   const toast = useStore(toastMessage, { ssr: 'initial' });
   const ready = step === 'ready';
   const desktop = useDesktopPush();
@@ -54,13 +56,39 @@ export default function TryOnExperience() {
     };
   }, [selfie]);
 
-  const openPicker = () => fileInput.current?.click();
-
   const onFile = (file: File | undefined) => {
     if (!file) return;
     if (selfie) URL.revokeObjectURL(selfie);
     const url = URL.createObjectURL(file);
     setSelfie(url);
+  };
+
+  const onDockPointerDown = (event: ReactPointerEvent) => {
+    dockPointer.current = { y: event.clientY, moved: false };
+  };
+
+  const onDockPointerMove = (event: ReactPointerEvent) => {
+    if (!dockPointer.current) return;
+    if (Math.abs(event.clientY - dockPointer.current.y) > 8) {
+      dockPointer.current.moved = true;
+    }
+  };
+
+  const onDockPointerUp = (event: ReactPointerEvent) => {
+    if (!dockPointer.current || !lookSession) {
+      dockPointer.current = null;
+      return;
+    }
+    const dy = dockPointer.current.y - event.clientY;
+    const moved = dockPointer.current.moved;
+    dockPointer.current = null;
+
+    if (!moved) {
+      openLook(lookSession);
+      return;
+    }
+    if (dy > 40) openLook(lookSession);
+    else if (dy < -40) setDockDismissed(true);
   };
 
   return (
@@ -70,7 +98,12 @@ export default function TryOnExperience() {
       animate={{ paddingRight: pushFeed ? TRYON_SIDEBAR_RESERVE_PX : 0 }}
       transition={tryOnSidebarTransition}
     >
-      <TryOnStage selfie={selfie} onRequestPhoto={openPicker} onStepChange={setStep} />
+      <TryOnStage
+        selfie={selfie}
+        onRequestGallery={() => galleryInput.current?.click()}
+        onRequestCamera={() => cameraInput.current?.click()}
+        onStepChange={setStep}
+      />
 
       <motion.div
         initial={{ opacity: 0, y: 18 }}
@@ -133,7 +166,14 @@ export default function TryOnExperience() {
       </AnimatePresence>
 
       <input
-        ref={fileInput}
+        ref={galleryInput}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => onFile(event.target.files?.[0])}
+      />
+      <input
+        ref={cameraInput}
         type="file"
         accept="image/*"
         capture="user"
@@ -157,21 +197,29 @@ export default function TryOnExperience() {
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 340, damping: 32 }}
-            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[70] w-[min(420px,calc(100vw-2rem))] -translate-x-1/2"
+            className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[70] w-[min(420px,calc(100vw-2rem))] -translate-x-1/2 touch-none"
           >
-            <div className="flex items-center rounded-2xl bg-[#3b517d] px-4 py-3.5 text-white shadow-[0_12px_40px_rgba(0,0,0,0.4)]">
-              <button
-                type="button"
-                onClick={() => lookSession && openLook(lookSession)}
-                className="flex min-w-0 flex-1 items-center gap-3 text-left"
-              >
+            <div
+              className="flex cursor-grab items-center rounded-2xl bg-[#3b517d] px-4 py-3.5 text-white shadow-[0_12px_40px_rgba(0,0,0,0.4)] active:cursor-grabbing"
+              onPointerDown={onDockPointerDown}
+              onPointerMove={onDockPointerMove}
+              onPointerUp={onDockPointerUp}
+              onPointerCancel={() => {
+                dockPointer.current = null;
+              }}
+            >
+              <div className="flex min-w-0 flex-1 items-center gap-3 text-left">
                 <ChevronUp size={18} />
                 <span className="text-sm font-medium">See all your looks</span>
-              </button>
+              </div>
               <button
                 type="button"
                 aria-label="Hide looks bar"
-                onClick={() => setDockDismissed(true)}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  setDockDismissed(true);
+                }}
+                onPointerDown={(event) => event.stopPropagation()}
                 className="ml-3 grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-white/10"
               >
                 <X size={16} />

@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SlidersHorizontal, X } from 'lucide-react';
+import { useStore } from '@nanostores/react';
 import { collectionTitles, getProductsByCategory } from '../data/products';
 import type { FilterState, Product } from '../types/product';
 import { PRICE_BOUNDS } from '../types/product';
 import { getProductPricing } from '../lib/utils';
-import { addToCart } from '../stores/shop';
+import { addToCart, adjustLineQuantity, cartItems, cartLineKey } from '../stores/shop';
 import { CATEGORY_EVENT, readCollectionCategory } from '../lib/collection-nav';
 import ProductCard from './ProductCard';
 import { DiscountBadge, PriceDisplay } from './PriceDisplay';
+import QuantityStepper from './QuantityStepper';
 import SidebarFilter from './SidebarFilter';
 
 const defaultDraft: FilterState = {
@@ -38,6 +40,11 @@ export default function CollectionSection({ initialCategory }: CollectionSection
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [quickView, setQuickView] = useState<Product | null>(null);
   const [category, setCategory] = useState(initialCategory || 'all');
+  const itemsMap = useStore(cartItems, { ssr: 'initial' });
+  const quickSize = quickView?.sizes[0] ?? 'M';
+  const quickColor = quickView?.colors[0]?.name ?? 'Charcoal';
+  const quickQty =
+    quickView ? itemsMap[cartLineKey(quickView.id, quickSize, quickColor)]?.quantity ?? 0 : 0;
 
   useEffect(() => {
     const syncCategory = () => setCategory(readCollectionCategory());
@@ -187,19 +194,32 @@ export default function CollectionSection({ initialCategory }: CollectionSection
                 <PriceDisplay product={quickView} size="md" className="mt-1" />
                 <p className="mt-3 text-sm leading-relaxed text-mist">{quickView.description}</p>
                 <div className="mt-6 flex gap-3">
-                  <button
-                    type="button"
-                    className="flex-1 rounded-xl bg-signal py-2.5 text-sm font-semibold"
-                    onClick={() => {
-                      addToCart(quickView, {
-                        size: quickView.sizes[0] ?? 'M',
-                        color: quickView.colors[0]?.name ?? 'Charcoal',
-                      });
-                      setQuickView(null);
-                    }}
-                  >
-                    Add to Cart
-                  </button>
+                  {quickQty > 0 ? (
+                    <QuantityStepper
+                      quantity={quickQty}
+                      onIncrease={() =>
+                        quickView && adjustLineQuantity(quickView, { size: quickSize, color: quickColor }, 1)
+                      }
+                      onDecrease={() =>
+                        quickView && adjustLineQuantity(quickView, { size: quickSize, color: quickColor }, -1)
+                      }
+                      className="flex-1 border-white/10"
+                    />
+                  ) : (
+                    <button
+                      type="button"
+                      className="flex-1 rounded-xl bg-signal py-2.5 text-sm font-semibold"
+                      onClick={() => {
+                        if (!quickView) return;
+                        addToCart(quickView, {
+                          size: quickSize,
+                          color: quickColor,
+                        });
+                      }}
+                    >
+                      Add to Cart
+                    </button>
+                  )}
                   <a href={`/product/${quickView.id}`} className="rounded-xl border border-white/15 px-4 py-2.5 text-sm">
                     Details
                   </a>

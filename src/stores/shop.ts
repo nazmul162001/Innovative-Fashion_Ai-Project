@@ -23,12 +23,22 @@ export const cartTotal = computed(cartItems, (items) =>
   Object.values(items).reduce((sum, item) => sum + item.price * item.quantity, 0),
 );
 
+export const cartBump = atom(0);
+
+export function cartLineKey(productId: string, size: string, color: string): string {
+  return `${productId}-${size}-${color}`;
+}
+
+export function getLineQuantity(productId: string, size: string, color: string): number {
+  return cartItems.get()[cartLineKey(productId, size, color)]?.quantity ?? 0;
+}
+
 export function addToCart(
   product: Product,
   options: { size: string; color: string; quantity?: number },
 ): void {
   const quantity = options.quantity ?? 1;
-  const key = `${product.id}-${options.size}-${options.color}`;
+  const key = cartLineKey(product.id, options.size, options.color);
   const existing = cartItems.get()[key];
   const { sale } = getProductPricing(product);
 
@@ -43,7 +53,22 @@ export function addToCart(
     quantity: existing ? existing.quantity + quantity : quantity,
   });
 
+  cartBump.set(cartBump.get() + 1);
   showToast(`${product.name} added to cart`);
+}
+
+export function adjustLineQuantity(
+  product: Product,
+  options: { size: string; color: string },
+  delta: number,
+): void {
+  const key = cartLineKey(product.id, options.size, options.color);
+  const existing = cartItems.get()[key];
+  if (!existing) {
+    if (delta > 0) addToCart(product, { ...options, quantity: delta });
+    return;
+  }
+  updateCartQuantity(key, existing.quantity + delta);
 }
 
 export function updateCartQuantity(key: string, quantity: number): void {

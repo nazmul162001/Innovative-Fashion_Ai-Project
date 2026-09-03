@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, Sparkles } from 'lucide-react';
+import { useStore } from '@nanostores/react';
 import type { Product, Size } from '../types/product';
 import { cn } from '../lib/utils';
 import { PriceDisplay } from './PriceDisplay';
-import { addToCart } from '../stores/shop';
+import QuantityStepper from './QuantityStepper';
+import { addToCart, adjustLineQuantity, cartItems, cartLineKey } from '../stores/shop';
 
 interface ProductSelectionPanelProps {
   product: Product;
@@ -15,6 +17,8 @@ export default function ProductSelectionPanel({ product, onTryOn }: ProductSelec
   const [size, setSize] = useState<Size>(product.sizes[0] ?? 'S');
   const [color, setColor] = useState(product.colors[0]?.name ?? 'Charcoal');
   const [openSection, setOpenSection] = useState<string | null>(null);
+  const items = useStore(cartItems, { ssr: 'initial' });
+  const quantity = items[cartLineKey(product.id, size, color)]?.quantity ?? 0;
 
   const sections = [
     { id: 'fabric', title: 'Fabric & Care', body: product.fabricCare },
@@ -86,13 +90,38 @@ export default function ProductSelectionPanel({ product, onTryOn }: ProductSelec
         <Sparkles size={14} className="text-accent-cyan" /> Try it with Inovative
       </p>
 
-      <button
-        type="button"
-        onClick={() => addToCart(product, { size, color })}
-        className="mt-5 w-full rounded-xl border border-white/10 py-3 text-sm font-semibold tracking-wide text-snow transition hover:bg-white/5"
-      >
-        Add to Cart
-      </button>
+      <div className="mt-5">
+        <AnimatePresence mode="wait" initial={false}>
+          {quantity > 0 ? (
+            <motion.div
+              key="stepper"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="flex justify-center"
+            >
+              <QuantityStepper
+                quantity={quantity}
+                onIncrease={() => adjustLineQuantity(product, { size, color }, 1)}
+                onDecrease={() => adjustLineQuantity(product, { size, color }, -1)}
+                className="w-full max-w-xs border-white/10"
+              />
+            </motion.div>
+          ) : (
+            <motion.button
+              key="add"
+              type="button"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              onClick={() => addToCart(product, { size, color })}
+              className="w-full rounded-xl border border-white/10 py-3 text-sm font-semibold tracking-wide text-snow transition hover:bg-white/5"
+            >
+              Add to Cart
+            </motion.button>
+          )}
+        </AnimatePresence>
+      </div>
 
       <div className="mt-8 divide-y divide-white/8 border-t border-white/10">
         {sections.map((section) => {

@@ -7,6 +7,7 @@ import Footer from '../components/Footer.astro';
 import Drawers from '../components/Drawers';
 import Toaster from '../components/Toaster';
 import InstallPrompt from '../components/InstallPrompt';
+import FloatingCart from '../components/FloatingCart';
 
 interface Props {
   title: string;
@@ -90,6 +91,7 @@ const { title, description = BRAND.description } = Astro.props;
     <Footer />
     <Drawers client:load />
     <Toaster client:load />
+    <FloatingCart client:load />
     <InstallPrompt client:only="react" />
   </body>
 </html>

@@ -14,14 +14,15 @@ export type TryOnStep = 'upload' | 'size' | 'generating' | 'poses' | 'ready';
 
 interface TryOnStageProps {
   selfie: string | null;
-  onRequestPhoto: () => void;
+  onRequestGallery: () => void;
+  onRequestCamera: () => void;
   onStepChange?: (step: TryOnStep) => void;
 }
 
 const GENERATE_MS = 9000;
 const SAVE_MS = 2400;
 
-export default function TryOnStage({ selfie, onRequestPhoto, onStepChange }: TryOnStageProps) {
+export default function TryOnStage({ selfie, onRequestGallery, onRequestCamera, onStepChange }: TryOnStageProps) {
   const [step, setStep] = useState<TryOnStep>('upload');
   const [size, setSize] = useState<AvatarSize | null>(null);
   const [poseId, setPoseId] = useState<string | null>(null);
@@ -70,7 +71,7 @@ export default function TryOnStage({ selfie, onRequestPhoto, onStepChange }: Try
       <AnimatePresence mode="wait">
         {step === 'upload' ? (
           <motion.div key="upload" {...fade} className="overflow-hidden rounded-[28px] bg-[#2a2c2f]">
-            <UploadHero selfie={selfie} onRequestPhoto={onRequestPhoto} />
+            <UploadHero selfie={selfie} onRequestGallery={onRequestGallery} onRequestCamera={onRequestCamera} />
           </motion.div>
         ) : null}
 
@@ -127,7 +128,15 @@ const fade = {
   transition: { duration: 0.35 },
 };
 
-function UploadHero({ selfie, onRequestPhoto }: { selfie: string | null; onRequestPhoto: () => void }) {
+function UploadHero({
+  selfie,
+  onRequestGallery,
+  onRequestCamera,
+}: {
+  selfie: string | null;
+  onRequestGallery: () => void;
+  onRequestCamera: () => void;
+}) {
   const [playing, setPlaying] = useState(true);
   const [heroIndex, setHeroIndex] = useState(0);
   const heroImage = HERO_LOOKS[heroIndex] ?? HERO_LOOKS[0];
@@ -149,15 +158,26 @@ function UploadHero({ selfie, onRequestPhoto }: { selfie: string | null; onReque
         <p className="mt-5 max-w-md text-base leading-relaxed text-white/70 sm:text-lg">
           One photo. Endless outfits. Watch pieces drape, move, and match on you — before anything ships.
         </p>
-        <motion.button
-          type="button"
-          whileHover={{ scale: 1.04 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={onRequestPhoto}
-          className="mt-8 inline-flex w-fit rounded-full bg-[#d9d9d9] px-6 py-3 text-sm font-medium text-black"
-        >
-          {selfie ? 'Use a different photo' : 'Start with your photo'}
-        </motion.button>
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onRequestCamera}
+            className="inline-flex w-fit rounded-full bg-[#d9d9d9] px-6 py-3 text-sm font-medium text-black"
+          >
+            {selfie ? 'Retake photo' : 'Take a photo'}
+          </motion.button>
+          <motion.button
+            type="button"
+            whileHover={{ scale: 1.04 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={onRequestGallery}
+            className="inline-flex w-fit rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white"
+          >
+            {selfie ? 'Choose another photo' : 'Upload from gallery'}
+          </motion.button>
+        </div>
         <p className="mt-8 text-[11px] leading-relaxed text-white/35 md:mt-10">
           Previews are experimental and may not match real fit. For inspiration only.
         </p>

@@ -1,11 +1,21 @@
 import { type ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeftRight, Heart, Search } from 'lucide-react';
 import { useStore } from '@nanostores/react';
 import type { Product } from '../types/product';
 import { cn, getProductPricing } from '../lib/utils';
-import { addToCart, compareIds, toggleCompare, toggleWishlist, wishlistIds } from '../stores/shop';
+import {
+  addToCart,
+  adjustLineQuantity,
+  cartItems,
+  cartLineKey,
+  compareIds,
+  toggleCompare,
+  toggleWishlist,
+  wishlistIds,
+} from '../stores/shop';
 import { DiscountBadge, PriceDisplay } from './PriceDisplay';
+import QuantityStepper from './QuantityStepper';
 
 interface ProductCardProps {
   product: Product;
@@ -15,10 +25,16 @@ interface ProductCardProps {
 export default function ProductCard({ product, onQuickView }: ProductCardProps) {
   const saved = useStore(wishlistIds, { ssr: 'initial' });
   const compared = useStore(compareIds, { ssr: 'initial' });
+  const items = useStore(cartItems, { ssr: 'initial' });
   const isSaved = saved.includes(product.id);
   const isCompared = compared.includes(product.id);
   const href = `/product/${product.id}`;
   const { discountPercent } = getProductPricing(product);
+  const size = product.sizes[1] ?? product.sizes[0] ?? 'M';
+  const color = product.colors[0]?.name ?? 'Charcoal';
+  const quantity = items[cartLineKey(product.id, size, color)]?.quantity ?? 0;
+
+  const add = () => addToCart(product, { size, color });
 
   return (
     <article className="product-card group relative">
@@ -47,50 +63,90 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
               >
                 <Heart size={15} className={isSaved ? 'fill-current' : ''} />
               </IconAction>
-              <IconAction
-                label="Compare"
-                active={isCompared}
-                onClick={() => toggleCompare(product.id)}
-              >
+              <IconAction label="Compare" active={isCompared} onClick={() => toggleCompare(product.id)}>
                 <ArrowLeftRight size={15} />
               </IconAction>
             </div>
           </div>
-          <motion.button
-            type="button"
-            className="pointer-events-auto relative z-[2] w-full rounded-xl bg-accent-blue py-2.5 text-sm font-semibold tracking-wide text-white uppercase hover:bg-signal-deep"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              addToCart(product, {
-                size: product.sizes[1] ?? product.sizes[0] ?? 'M',
-                color: product.colors[0]?.name ?? 'Charcoal',
-              });
-            }}
-          >
-            Add to Cart
-          </motion.button>
+          <div className="pointer-events-auto relative z-[2] flex justify-center">
+            <CartControl
+              quantity={quantity}
+              onAdd={add}
+              onIncrease={() => adjustLineQuantity(product, { size, color }, 1)}
+              onDecrease={() => adjustLineQuantity(product, { size, color }, -1)}
+            />
+          </div>
         </div>
-        <button
-          type="button"
-          className="absolute inset-x-3 bottom-3 z-[2] rounded-xl bg-accent-blue py-2 text-xs font-semibold tracking-wide text-white uppercase md:hidden"
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            addToCart(product, {
-              size: product.sizes[1] ?? product.sizes[0] ?? 'M',
-              color: product.colors[0]?.name ?? 'Charcoal',
-            });
-          }}
-        >
-          Add to Cart
-        </button>
+        <div className="absolute inset-x-3 bottom-3 z-[2] flex justify-center md:hidden">
+          <CartControl
+            quantity={quantity}
+            onAdd={add}
+            onIncrease={() => adjustLineQuantity(product, { size, color }, 1)}
+            onDecrease={() => adjustLineQuantity(product, { size, color }, -1)}
+            compact
+          />
+        </div>
       </div>
       <div className="relative z-[1] mt-3 px-0.5">
         <p className="text-sm font-medium text-snow group-hover:text-accent-cyan">{product.name}</p>
         <PriceDisplay product={product} className="mt-1" />
       </div>
     </article>
+  );
+}
+
+function CartControl({
+  quantity,
+  onAdd,
+  onIncrease,
+  onDecrease,
+  compact = false,
+}: {
+  quantity: number;
+  onAdd: () => void;
+  onIncrease: () => void;
+  onDecrease: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      {quantity > 0 ? (
+        <motion.div
+          key="stepper"
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.92 }}
+          className="w-full max-w-[11rem]"
+        >
+          <QuantityStepper
+            quantity={quantity}
+            onIncrease={onIncrease}
+            onDecrease={onDecrease}
+            size={compact ? 'sm' : 'md'}
+            className="w-full bg-ink-soft/95"
+          />
+        </motion.div>
+      ) : (
+        <motion.button
+          key="add"
+          type="button"
+          initial={{ opacity: 0, scale: 0.92 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.92 }}
+          className={cn(
+            'pointer-events-auto relative z-[2] w-full rounded-xl bg-accent-blue font-semibold tracking-wide text-white uppercase hover:bg-signal-deep',
+            compact ? 'py-2 text-xs' : 'py-2.5 text-sm',
+          )}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onAdd();
+          }}
+        >
+          Add to Cart
+        </motion.button>
+      )}
+    </AnimatePresence>
   );
 }
 

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
+import { AnimatePresence, motion, useMotionValue, animate } from 'framer-motion';
 import { Bookmark, ChevronDown, ChevronLeft, ChevronRight, RefreshCw, Share2, X } from 'lucide-react';
 import type { LookItem } from '../data/looks';
 import { showToast } from '../stores/shop';
@@ -8,6 +8,8 @@ export const TRYON_SIDEBAR_RESERVE_PX = 448;
 export const tryOnSidebarTransition = { type: 'spring' as const, stiffness: 280, damping: 34 };
 
 const LOAD_COPY = ['Creating the look...', 'Almost there...', 'Adding the final touches...'] as const;
+const DOCK_COLLAPSED = 48;
+const DOCK_EXPANDED = 260;
 
 interface TryOnSidebarProps {
   look: LookItem | null;
@@ -25,6 +27,10 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
   const [hovered, setHovered] = useState(false);
   const historyRef = useRef(history);
   const recentScroller = useRef<HTMLDivElement>(null);
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
+  const dockHeight = useMotionValue(DOCK_COLLAPSED);
+  const dockDragStart = useRef(DOCK_COLLAPSED);
+  const dockPointerY = useRef(0);
   historyRef.current = history;
 
   const current = history[index] ?? look;
@@ -33,8 +39,17 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
     if (!open) {
       setRecentOpen(false);
       setHovered(false);
+      dockHeight.set(DOCK_COLLAPSED);
     }
-  }, [open]);
+  }, [open, dockHeight]);
+
+  useEffect(() => {
+    void animate(dockHeight, recentOpen ? DOCK_EXPANDED : DOCK_COLLAPSED, {
+      type: 'spring',
+      stiffness: 340,
+      damping: 34,
+    });
+  }, [recentOpen, dockHeight]);
 
   useEffect(() => {
     if (!open || !look) return;
@@ -80,6 +95,23 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
     setIndex((currentIndex) => (currentIndex + direction + history.length) % history.length);
   };
 
+  const onImagePointerDown = (event: ReactPointerEvent) => {
+    if (phase !== 'result' || history.length < 2) return;
+    swipeStart.current = { x: event.clientX, y: event.clientY };
+  };
+
+  const onImagePointerUp = (event: ReactPointerEvent) => {
+    if (!swipeStart.current || history.length < 2) {
+      swipeStart.current = null;
+      return;
+    }
+    const dx = event.clientX - swipeStart.current.x;
+    const dy = Math.abs(event.clientY - swipeStart.current.y);
+    swipeStart.current = null;
+    if (Math.abs(dx) < 48 || dy > 56) return;
+    go(dx < 0 ? 1 : -1);
+  };
+
   const removeTried = (id: string) => {
     setHistory((prev) => {
       const next = prev.filter((item) => item.id !== id);
@@ -121,7 +153,7 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
           className="fixed top-3 right-3 bottom-3 z-[75] flex w-[min(26.5rem,calc(100vw-1.5rem))] flex-col overflow-hidden rounded-[28px] bg-[#1c1e21] shadow-[0_24px_80px_rgba(0,0,0,0.55)] md:top-[4.75rem] md:right-3 md:bottom-3"
         >
           <div
-            className="relative min-h-0 flex-1"
+            className="relative min-h-0 flex-1 touch-pan-y"
             onPointerEnter={() => setHovered(true)}
             onPointerLeave={() => setHovered(false)}
           >
@@ -134,21 +166,6 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
                   exit={{ opacity: 0 }}
                   className="tryon-loading-aurora absolute inset-0 flex flex-col"
                 >
-                  <motion.span
-                    className="pointer-events-none absolute -top-10 left-[-20%] h-56 w-56 rounded-full bg-cyan-400/25 blur-3xl"
-                    animate={{ x: [0, 40, -10, 0], y: [0, 30, 10, 0], opacity: [0.45, 0.7, 0.5, 0.45] }}
-                    transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
-                  />
-                  <motion.span
-                    className="pointer-events-none absolute top-[30%] right-[-25%] h-64 w-64 rounded-full bg-indigo-500/30 blur-3xl"
-                    animate={{ x: [0, -30, 20, 0], y: [0, -20, 25, 0], opacity: [0.4, 0.65, 0.45, 0.4] }}
-                    transition={{ duration: 8.5, repeat: Infinity, ease: 'easeInOut' }}
-                  />
-                  <motion.span
-                    className="pointer-events-none absolute bottom-[-10%] left-[10%] h-52 w-52 rounded-full bg-sky-500/20 blur-3xl"
-                    animate={{ x: [0, 25, -15, 0], y: [0, -25, 15, 0], opacity: [0.35, 0.6, 0.4, 0.35] }}
-                    transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
-                  />
                   <SidebarClose onClose={onClose} />
                   <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6">
                     <SparkleFace />
@@ -168,22 +185,28 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.35 }}
                   className="absolute inset-0 bg-[#ececec]"
+                  onPointerDown={onImagePointerDown}
+                  onPointerUp={onImagePointerUp}
+                  onPointerCancel={() => {
+                    swipeStart.current = null;
+                  }}
                 >
                   <img
                     src={current?.image}
                     alt={current?.name ?? 'Tried look'}
-                    className="h-full w-full object-cover object-top"
+                    draggable={false}
+                    className="h-full w-full object-cover object-top select-none"
                   />
                   <SidebarClose onClose={onClose} />
 
                   {history.length > 1 ? (
                     <>
-                      <NavArrow side="left" visible={hovered} label="Previous look" onClick={() => go(-1)} />
-                      <NavArrow side="right" visible={hovered} label="Next look" onClick={() => go(1)} />
+                      <NavArrow side="left" forceVisible={hovered} label="Previous look" onClick={() => go(-1)} />
+                      <NavArrow side="right" forceVisible={hovered} label="Next look" onClick={() => go(1)} />
                     </>
                   ) : null}
 
-                  <div className="absolute bottom-14 left-4">
+                  <div className="absolute bottom-16 left-4">
                     {current?.productId ? (
                       <a
                         href={`/product/${current.productId}`}
@@ -202,7 +225,7 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
                     )}
                   </div>
 
-                  <div className="absolute right-3 bottom-14 flex flex-col gap-2">
+                  <div className="absolute right-3 bottom-16 flex flex-col gap-2">
                     <IconRound label="Share" onClick={() => void share()}>
                       <Share2 size={16} />
                     </IconRound>
@@ -221,17 +244,33 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
             </AnimatePresence>
 
             <motion.div
-              className="absolute inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-[22px] bg-[#2a2c2f]"
-              initial={false}
-              animate={{ height: recentOpen ? 248 : 42 }}
-              transition={{ type: 'spring', stiffness: 340, damping: 34 }}
+              className="absolute inset-x-0 bottom-0 z-20 overflow-hidden rounded-t-[22px] bg-[#2a2c2f] touch-none"
+              style={{ height: dockHeight }}
             >
               <button
                 type="button"
                 aria-expanded={recentOpen}
                 aria-label={recentOpen ? 'Hide recently tried' : 'Show recently tried'}
                 onClick={() => setRecentOpen((value) => !value)}
-                className="flex h-[42px] w-full items-center justify-center"
+                onPointerDown={(event) => {
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  dockDragStart.current = dockHeight.get();
+                  dockPointerY.current = event.clientY;
+                }}
+                onPointerMove={(event) => {
+                  if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+                  const dy = dockPointerY.current - event.clientY;
+                  const next = Math.min(DOCK_EXPANDED, Math.max(DOCK_COLLAPSED, dockDragStart.current + dy));
+                  dockHeight.set(next);
+                }}
+                onPointerUp={(event) => {
+                  if (!event.currentTarget.hasPointerCapture(event.pointerId)) return;
+                  event.currentTarget.releasePointerCapture(event.pointerId);
+                  const currentHeight = dockHeight.get();
+                  const openDock = currentHeight > (DOCK_COLLAPSED + DOCK_EXPANDED) / 2;
+                  setRecentOpen(openDock);
+                }}
+                className="flex h-12 w-full cursor-grab items-center justify-center active:cursor-grabbing"
               >
                 <span className="h-1 w-10 rounded-full bg-white/35" />
               </button>
@@ -324,12 +363,12 @@ function SidebarClose({ onClose }: { onClose: () => void }) {
 
 function NavArrow({
   side,
-  visible,
+  forceVisible,
   label,
   onClick,
 }: {
   side: 'left' | 'right';
-  visible: boolean;
+  forceVisible: boolean;
   label: string;
   onClick: () => void;
 }) {
@@ -337,13 +376,14 @@ function NavArrow({
     <motion.button
       type="button"
       aria-label={label}
-      onClick={onClick}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
       initial={false}
-      animate={{ opacity: visible ? 1 : 0, x: visible ? 0 : side === 'left' ? -8 : 8 }}
-      transition={{ duration: 0.22 }}
-      className={`absolute top-1/2 z-10 grid h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-black/55 text-white ${
+      className={`absolute top-1/2 z-10 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-black/60 text-white shadow-lg transition-opacity md:h-10 md:w-10 ${
         side === 'left' ? 'left-3' : 'right-3'
-      } ${visible ? 'pointer-events-auto' : 'pointer-events-none'}`}
+      } ${forceVisible ? 'md:opacity-100' : 'md:opacity-0 md:pointer-events-none'}`}
     >
       {side === 'left' ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
     </motion.button>
@@ -363,7 +403,10 @@ function IconRound({
     <button
       type="button"
       aria-label={label}
-      onClick={onClick}
+      onClick={(event) => {
+        event.stopPropagation();
+        onClick();
+      }}
       className="grid h-10 w-10 place-items-center rounded-full bg-black/55 text-white"
     >
       {children}
