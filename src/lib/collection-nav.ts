@@ -19,7 +19,19 @@ export function applyHomeUrl(url: URL, push: boolean) {
   const next = `${url.pathname}${url.search}${url.hash}`;
   const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
   if (push && next !== current) {
-    window.history.pushState({ category }, '', next);
+    // Preserve Astro ClientRouter history fields (index / scrollX / scrollY).
+    const prev =
+      window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
+    window.history.pushState(
+      {
+        ...prev,
+        category,
+        scrollX: window.scrollX || 0,
+        scrollY: window.scrollY || 0,
+      },
+      '',
+      next,
+    );
   }
   window.dispatchEvent(new CustomEvent(CATEGORY_EVENT, { detail: category }));
   scrollToHash(url.hash);

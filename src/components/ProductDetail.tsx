@@ -4,6 +4,12 @@ import ProductGallery from './ProductGallery';
 import ProductSelectionPanel from './ProductSelectionPanel';
 import CompleteTheLook from './CompleteTheLook';
 
+declare global {
+  interface Window {
+    __ifIsPopNav?: boolean;
+  }
+}
+
 interface ProductDetailProps {
   product: Product;
   related: Product[];
@@ -11,7 +17,9 @@ interface ProductDetailProps {
 
 export default function ProductDetail({ product, related }: ProductDetailProps) {
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Device back restores prior scroll; only force top on forward entry.
+    if (window.__ifIsPopNav) return;
+    window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
     document.documentElement.scrollTop = 0;
     document.body.scrollTop = 0;
   }, [product.id]);

@@ -51,24 +51,115 @@ const { title, description = BRAND.description } = Astro.props;
   <body class="hero-bg min-h-screen max-w-full overflow-x-clip font-sans text-snow antialiased">
     <script is:inline>
       (function () {
+        // Inline layout scripts re-run on every ClientRouter swap — init once.
+        if (window.__ifNavInit) return;
+        window.__ifNavInit = true;
+
+        var SCROLL_KEY = 'if-scroll-map';
+
         try {
           if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         } catch (e) {}
 
         window.__ifPageLoads = 0;
+        window.__ifIsPopNav = false;
+
         document.addEventListener('astro:page-load', function () {
           window.__ifPageLoads = (window.__ifPageLoads || 0) + 1;
           if (window.__ifPageLoads > 1) window.__ifAstroClientNav = true;
         });
 
+        function pathKey(url) {
+          var u = url || location;
+          return (u.pathname || '') + (u.search || '');
+        }
+
+        function readMap() {
+          try {
+            return JSON.parse(sessionStorage.getItem(SCROLL_KEY) || '{}');
+          } catch (e) {
+            return {};
+          }
+        }
+
+        function writeMap(map) {
+          try {
+            sessionStorage.setItem(SCROLL_KEY, JSON.stringify(map));
+          } catch (e) {}
+        }
+
+        function saveScrollForCurrent() {
+          var map = readMap();
+          map[pathKey()] = window.scrollY || window.pageYOffset || 0;
+          writeMap(map);
+        }
+
         function scrollTop() {
-          window.scrollTo(0, 0);
+          window.scrollTo({ left: 0, top: 0, behavior: 'instant' });
           document.documentElement.scrollTop = 0;
           document.body.scrollTop = 0;
         }
 
-        document.addEventListener('astro:after-swap', scrollTop);
-        document.addEventListener('astro:page-load', scrollTop);
+        function applyScrollY(y) {
+          window.scrollTo({ left: 0, top: y, behavior: 'instant' });
+          document.documentElement.scrollTop = y;
+          document.body.scrollTop = y;
+        }
+
+        function restoreScroll() {
+          var map = readMap();
+          var y = map[pathKey()];
+          // Prefer Astro's history.state scroll when present.
+          if (history.state && typeof history.state.scrollY === 'number' && history.state.scrollY > 0) {
+            y = history.state.scrollY;
+          }
+          if (typeof y !== 'number') {
+            scrollTop();
+            return;
+          }
+          applyScrollY(y);
+          // Re-apply after layout/images/GSAP so the position sticks.
+          requestAnimationFrame(function () {
+            applyScrollY(y);
+            requestAnimationFrame(function () {
+              applyScrollY(y);
+            });
+          });
+          window.setTimeout(function () {
+            applyScrollY(y);
+          }, 120);
+        }
+
+        window.addEventListener('popstate', function () {
+          window.__ifIsPopNav = true;
+        });
+
+        // Capture position right before leaving a page (forward link clicks).
+        document.addEventListener('astro:before-preparation', function () {
+          if (!window.__ifIsPopNav) saveScrollForCurrent();
+        });
+
+        function onArrive() {
+          if (window.__ifIsPopNav) {
+            restoreScroll();
+            // Keep the flag long enough for islands (e.g. ProductDetail) to skip top scroll.
+            window.setTimeout(function () {
+              window.__ifIsPopNav = false;
+            }, 300);
+            return;
+          }
+          scrollTop();
+        }
+
+        document.addEventListener('astro:after-swap', onArrive);
+        document.addEventListener('astro:page-load', function () {
+          if (window.__ifIsPopNav) {
+            restoreScroll();
+            return;
+          }
+          // Initial full page load only (no prior swap): start at top.
+          if ((window.__ifPageLoads || 0) <= 1) scrollTop();
+        });
 
         document.addEventListener(
           'click',
@@ -93,7 +184,19 @@ const { title, description = BRAND.description } = Astro.props;
             var category = url.searchParams.get('category') || 'all';
             var next = url.pathname + url.search + url.hash;
             var current = location.pathname + location.search + location.hash;
-            if (next !== current) history.pushState({ category: category }, '', next);
+            if (next !== current) {
+              // Preserve Astro ClientRouter scroll state on history entries.
+              var prev = history.state && typeof history.state === 'object' ? history.state : {};
+              history.pushState(
+                Object.assign({}, prev, {
+                  category: category,
+                  scrollX: window.scrollX || 0,
+                  scrollY: window.scrollY || 0,
+                }),
+                '',
+                next,
+              );
+            }
             window.dispatchEvent(new CustomEvent('if:category', { detail: category }));
             if (url.hash) {
               var el = document.getElementById(url.hash.slice(1));

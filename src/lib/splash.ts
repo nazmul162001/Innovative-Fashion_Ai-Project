@@ -7,6 +7,10 @@ declare global {
     /** Set after the first Astro page-load when a soft client nav happens. */
     __ifAstroClientNav?: boolean;
     __ifPageLoads?: number;
+    /** True while handling browser back/forward so islands skip forced top scroll. */
+    __ifIsPopNav?: boolean;
+    /** Guards Layout nav/scroll script from re-binding on ClientRouter swaps. */
+    __ifNavInit?: boolean;
   }
 }
 
