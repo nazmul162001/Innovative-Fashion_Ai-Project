@@ -26,6 +26,17 @@ Then open `http://localhost:3000`.
 - `/api/health` — Next Route Handler health check
 - `/api/v1/*` — stub for future Express mount (`src/server`)
 
+## Deploy (Vercel)
+
+This is a **Next.js** app. Do not set Output Directory to `dist` (that was Astro).
+
+1. Framework Preset: **Next.js**
+2. Build Command: `npm run build` (or leave default)
+3. Output Directory: **leave empty** (clear any `dist` override from the old Astro project)
+4. Install Command: `npm install`
+
+`vercel.json` in the repo forces `framework: "nextjs"` and clears `outputDirectory`.
+
 ## Backend scaffold
 
 Express lives under `src/server` (routes, controllers, middleware). Mount later with `serverless-http` on `/api/v1`. See `.env.example`.
