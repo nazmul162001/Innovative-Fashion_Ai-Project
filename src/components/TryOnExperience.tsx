@@ -4,7 +4,11 @@ import { ChevronUp, X } from 'lucide-react';
 import { useStore } from '@nanostores/react';
 import { lookCollections, type LookItem, type WearTab } from '../data/looks';
 import LookCarousel from './LookCarousel';
-import TryOnStage, { type TryOnStep } from './TryOnStage';
+import TryOnStage, {
+  TRYON_CAMERA_INPUT_ID,
+  TRYON_GALLERY_INPUT_ID,
+  type TryOnStep,
+} from './TryOnStage';
 import TryOnSidebar, { TRYON_SIDEBAR_RESERVE_PX, tryOnSidebarTransition } from './TryOnSidebar';
 import { showToast, toastMessage } from '../stores/shop';
 
@@ -34,8 +38,6 @@ export default function TryOnExperience() {
   const [lookSession, setLookSession] = useState<LookItem | null>(null);
   const [dockDismissed, setDockDismissed] = useState(false);
   const [step, setStep] = useState<TryOnStep>('upload');
-  const galleryInput = useRef<HTMLInputElement>(null);
-  const cameraInput = useRef<HTMLInputElement>(null);
   const dockPointer = useRef<{ y: number; moved: boolean } | null>(null);
   const toast = useStore(toastMessage, { ssr: 'initial' });
   const ready = step === 'ready';
@@ -98,12 +100,7 @@ export default function TryOnExperience() {
       animate={{ paddingRight: pushFeed ? TRYON_SIDEBAR_RESERVE_PX : 0 }}
       transition={tryOnSidebarTransition}
     >
-      <TryOnStage
-        selfie={selfie}
-        onRequestGallery={() => galleryInput.current?.click()}
-        onRequestCamera={() => cameraInput.current?.click()}
-        onStepChange={setStep}
-      />
+      <TryOnStage selfie={selfie} onStepChange={setStep} />
 
       <motion.div
         initial={{ opacity: 0, y: 18 }}
@@ -124,16 +121,17 @@ export default function TryOnExperience() {
                 role="tab"
                 aria-selected={active}
                 onClick={() => setTab(item.id)}
-                className={`relative pb-3 text-base sm:text-lg ${active ? 'text-white' : 'text-white/45 hover:text-white/70'}`}
+                className={`relative pb-3 text-base sm:text-lg ${
+                  active ? 'text-white' : 'text-white/45 hover:text-white/70'
+                }`}
               >
                 {item.label}
-                {active ? (
-                  <motion.span
-                    layoutId="tryon-tab-underline"
-                    className="absolute right-0 bottom-0 left-0 h-px bg-white"
-                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                  />
-                ) : null}
+                <span
+                  aria-hidden
+                  className={`absolute right-0 bottom-0 left-0 h-0.5 rounded-full transition-opacity duration-200 ${
+                    active ? 'bg-white opacity-100' : 'bg-white opacity-0'
+                  }`}
+                />
               </button>
             );
           })}
@@ -166,18 +164,20 @@ export default function TryOnExperience() {
       </AnimatePresence>
 
       <input
-        ref={galleryInput}
+        id={TRYON_GALLERY_INPUT_ID}
         type="file"
         accept="image/*"
-        className="hidden"
+        className="sr-only"
+        tabIndex={-1}
         onChange={(event) => onFile(event.target.files?.[0])}
       />
       <input
-        ref={cameraInput}
+        id={TRYON_CAMERA_INPUT_ID}
         type="file"
         accept="image/*"
         capture="user"
-        className="hidden"
+        className="sr-only"
+        tabIndex={-1}
         onChange={(event) => onFile(event.target.files?.[0])}
       />
 

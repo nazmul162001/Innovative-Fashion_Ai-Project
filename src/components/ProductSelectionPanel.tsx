@@ -16,9 +16,11 @@ interface ProductSelectionPanelProps {
 export default function ProductSelectionPanel({ product, onTryOn }: ProductSelectionPanelProps) {
   const [size, setSize] = useState<Size>(product.sizes[0] ?? 'S');
   const [color, setColor] = useState(product.colors[0]?.name ?? 'Charcoal');
+  const [pendingQty, setPendingQty] = useState(1);
   const [openSection, setOpenSection] = useState<string | null>(null);
   const items = useStore(cartItems, { ssr: 'initial' });
   const quantity = items[cartLineKey(product.id, size, color)]?.quantity ?? 0;
+  const inCart = quantity > 0;
 
   const sections = [
     { id: 'fabric', title: 'Fabric & Care', body: product.fabricCare },
@@ -31,8 +33,8 @@ export default function ProductSelectionPanel({ product, onTryOn }: ProductSelec
   ];
 
   return (
-    <div id="selection" className="dark-card-glow rounded-3xl p-6 md:p-8">
-      <h1 className="text-3xl font-bold tracking-tight text-snow uppercase md:text-[34px] md:leading-tight">
+    <div id="selection" className="dark-card-glow min-w-0 max-w-full overflow-hidden rounded-3xl p-5 sm:p-6 md:p-8">
+      <h1 className="break-words text-2xl font-bold tracking-tight text-snow uppercase sm:text-3xl md:text-[34px] md:leading-tight">
         {product.name}
       </h1>
       <PriceDisplay product={product} size="lg" className="mt-3" />
@@ -90,35 +92,50 @@ export default function ProductSelectionPanel({ product, onTryOn }: ProductSelec
         <Sparkles size={14} className="text-accent-cyan" /> Try it with Inovative
       </p>
 
-      <div className="mt-5">
+      <div className="mt-5 space-y-3">
         <AnimatePresence mode="wait" initial={false}>
-          {quantity > 0 ? (
+          {inCart ? (
             <motion.div
-              key="stepper"
+              key="in-cart"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              className="flex justify-center"
+              className="space-y-2"
             >
+              <p className="text-center text-xs tracking-[0.14em] text-[#9CA3AF] uppercase">Quantity</p>
               <QuantityStepper
                 quantity={quantity}
                 onIncrease={() => adjustLineQuantity(product, { size, color }, 1)}
                 onDecrease={() => adjustLineQuantity(product, { size, color }, -1)}
-                className="w-full max-w-xs border-white/10"
+                className="w-full border-white/15 bg-ink-soft"
               />
             </motion.div>
           ) : (
-            <motion.button
-              key="add"
-              type="button"
+            <motion.div
+              key="add-flow"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
-              onClick={() => addToCart(product, { size, color })}
-              className="w-full rounded-xl border border-white/10 py-3 text-sm font-semibold tracking-wide text-snow transition hover:bg-white/5"
+              className="space-y-3"
             >
-              Add to Cart
-            </motion.button>
+              <p className="text-center text-xs tracking-[0.14em] text-[#9CA3AF] uppercase">Quantity</p>
+              <QuantityStepper
+                quantity={pendingQty}
+                onIncrease={() => setPendingQty((value) => value + 1)}
+                onDecrease={() => setPendingQty((value) => Math.max(1, value - 1))}
+                className="w-full border-white/15 bg-ink-soft"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  addToCart(product, { size, color, quantity: pendingQty });
+                  setPendingQty(1);
+                }}
+                className="w-full rounded-xl bg-accent-blue py-3 text-sm font-semibold tracking-wide text-white uppercase transition hover:bg-signal-deep"
+              >
+                Add to Cart
+              </button>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

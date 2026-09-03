@@ -15,7 +15,7 @@ export default function ProductGallery({ name, images, productId }: ProductGalle
   const { discountPercent } = getProductPricing({ id: productId, price: 0 });
 
   return (
-    <div>
+    <div className="min-w-0 max-w-full">
       <div className="dark-card-glow relative overflow-hidden rounded-2xl">
         <AnimatePresence mode="wait" initial={false}>
           <motion.img
@@ -26,19 +26,19 @@ export default function ProductGallery({ name, images, productId }: ProductGalle
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28 }}
-            className="studio-image-light aspect-square w-full object-cover"
+            className="studio-image-light aspect-square w-full max-w-full object-cover"
           />
         </AnimatePresence>
         <DiscountBadge percent={discountPercent} />
       </div>
-      <div className="mt-3 grid grid-cols-4 gap-3">
+      <div className="mt-3 grid grid-cols-4 gap-2 sm:gap-3">
         {images.slice(0, 4).map((image, index) => (
           <button
             key={image + index}
             type="button"
             onClick={() => setActive(index)}
             className={cn(
-              'overflow-hidden rounded-xl border-2 bg-dark-card transition',
+              'min-w-0 overflow-hidden rounded-xl border-2 bg-dark-card transition',
               index === active
                 ? 'border-accent-cyan shadow-[0_0_12px_rgba(56,189,248,0.35)]'
                 : 'border-transparent hover:border-white/20',

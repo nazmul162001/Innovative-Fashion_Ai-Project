@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion, type PanInfo } from 'framer-motion';
 import { Minus, Plus, X } from 'lucide-react';
 import { useStore } from '@nanostores/react';
 import { products } from '../data/products';
@@ -23,11 +23,17 @@ export default function Drawers() {
   const cartList = Object.values(items);
   const saved = products.filter((product) => savedIds.includes(product.id));
 
+  const close = () => openDrawer.set(null);
+
+  const onDragEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.x > 96 || info.velocity.x > 650) close();
+  };
+
   return (
     <AnimatePresence>
       {drawer === 'cart' || drawer === 'wishlist' ? (
         <motion.div
-          className="fixed inset-0 z-[70] flex justify-end"
+          className="fixed inset-0 z-[70] flex justify-end overflow-hidden"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -36,22 +42,31 @@ export default function Drawers() {
             type="button"
             className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
             aria-label="Close panel"
-            onClick={() => openDrawer.set(null)}
+            onClick={close}
           />
           <motion.aside
-            initial={reduceMotion ? false : { x: 420 }}
+            key={drawer}
+            initial={reduceMotion ? false : { x: '100%' }}
             animate={{ x: 0 }}
-            exit={{ x: 420 }}
+            exit={{ x: '100%' }}
             transition={{ type: 'spring', stiffness: 320, damping: 34 }}
-            className="relative flex h-full w-full max-w-md flex-col border-l border-white/10 bg-ink-soft shadow-soft"
+            drag={reduceMotion ? false : 'x'}
+            dragDirectionLock
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={{ left: 0.04, right: 0.92 }}
+            onDragEnd={onDragEnd}
+            className="relative flex h-full w-full max-w-md touch-pan-y flex-col border-l border-white/10 bg-ink-soft shadow-soft"
           >
+            <div className="flex justify-center pt-3 md:hidden" aria-hidden>
+              <span className="h-1 w-10 rounded-full bg-white/20" />
+            </div>
             <header className="flex items-center justify-between border-b border-white/10 px-5 py-4">
               <h2 className="text-sm font-semibold tracking-[0.16em] uppercase">
                 {drawer === 'cart' ? 'Your Cart' : 'Wishlist'}
               </h2>
               <button
                 type="button"
-                onClick={() => openDrawer.set(null)}
+                onClick={close}
                 className="rounded-full p-2 text-mist transition hover:bg-white/5 hover:text-snow"
                 aria-label="Close"
               >
@@ -59,25 +74,25 @@ export default function Drawers() {
               </button>
             </header>
 
-            <div className="flex-1 overflow-y-auto px-5 py-4">
+            <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
               {drawer === 'cart' ? (
                 cartList.length === 0 ? (
                   <p className="pt-10 text-center text-sm text-mist">Your cart is empty.</p>
                 ) : (
                   <ul className="space-y-4">
                     {cartList.map((item) => (
-                      <li key={item.key} className="flex gap-3">
+                      <li key={item.key} className="flex min-w-0 gap-3">
                         <img
                           src={item.image}
                           alt={item.name}
-                          className="h-20 w-20 rounded-xl object-cover"
+                          className="h-20 w-20 shrink-0 rounded-xl object-cover"
                         />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{item.name}</p>
                           <p className="text-xs text-mist">
                             {item.size} · {item.color}
                           </p>
-                          <div className="mt-2 flex items-center justify-between">
+                          <div className="mt-2 flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 rounded-full border border-white/10 px-2 py-1">
                               <button
                                 type="button"
@@ -104,7 +119,7 @@ export default function Drawers() {
                             </button>
                           </div>
                         </div>
-                        <p className="text-sm">{formatPrice(item.price * item.quantity)}</p>
+                        <p className="shrink-0 text-sm">{formatPrice(item.price * item.quantity)}</p>
                       </li>
                     ))}
                   </ul>
@@ -114,7 +129,7 @@ export default function Drawers() {
               ) : (
                 <ul className="space-y-4">
                   {saved.map((product) => (
-                    <li key={product.id} className="flex gap-3">
+                    <li key={product.id} className="flex min-w-0 gap-3">
                       <a href={`/product/${product.id}`} className="shrink-0">
                         <img
                           src={product.images[0]}

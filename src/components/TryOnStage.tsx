@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { ChevronLeft, Loader2, Pause, Play } from 'lucide-react';
+import { Camera, ChevronLeft, ImageIcon, Loader2, Pause, Play, X } from 'lucide-react';
 import {
   AVATAR_POSES,
   AVATAR_SIZES,
@@ -12,17 +13,18 @@ import { showToast } from '../stores/shop';
 
 export type TryOnStep = 'upload' | 'size' | 'generating' | 'poses' | 'ready';
 
+export const TRYON_GALLERY_INPUT_ID = 'tryon-gallery-input';
+export const TRYON_CAMERA_INPUT_ID = 'tryon-camera-input';
+
 interface TryOnStageProps {
   selfie: string | null;
-  onRequestGallery: () => void;
-  onRequestCamera: () => void;
   onStepChange?: (step: TryOnStep) => void;
 }
 
 const GENERATE_MS = 9000;
 const SAVE_MS = 2400;
 
-export default function TryOnStage({ selfie, onRequestGallery, onRequestCamera, onStepChange }: TryOnStageProps) {
+export default function TryOnStage({ selfie, onStepChange }: TryOnStageProps) {
   const [step, setStep] = useState<TryOnStep>('upload');
   const [size, setSize] = useState<AvatarSize | null>(null);
   const [poseId, setPoseId] = useState<string | null>(null);
@@ -71,7 +73,7 @@ export default function TryOnStage({ selfie, onRequestGallery, onRequestCamera, 
       <AnimatePresence mode="wait">
         {step === 'upload' ? (
           <motion.div key="upload" {...fade} className="overflow-hidden rounded-[28px] bg-[#2a2c2f]">
-            <UploadHero selfie={selfie} onRequestGallery={onRequestGallery} onRequestCamera={onRequestCamera} />
+            <UploadHero selfie={selfie} />
           </motion.div>
         ) : null}
 
@@ -128,18 +130,24 @@ const fade = {
   transition: { duration: 0.35 },
 };
 
-function UploadHero({
-  selfie,
-  onRequestGallery,
-  onRequestCamera,
-}: {
-  selfie: string | null;
-  onRequestGallery: () => void;
-  onRequestCamera: () => void;
-}) {
+function UploadHero({ selfie }: { selfie: string | null }) {
   const [playing, setPlaying] = useState(true);
   const [heroIndex, setHeroIndex] = useState(0);
+  const [chooserOpen, setChooserOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.matchMedia('(max-width: 767px)').matches : true,
+  );
   const heroImage = HERO_LOOKS[heroIndex] ?? HERO_LOOKS[0];
+
+  useEffect(() => {
+    setMounted(true);
+    const media = window.matchMedia('(max-width: 767px)');
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
 
   useEffect(() => {
     if (!playing) return;
@@ -148,6 +156,104 @@ function UploadHero({
     }, 4200);
     return () => window.clearInterval(timer);
   }, [playing]);
+
+  useEffect(() => {
+    if (selfie) setChooserOpen(false);
+  }, [selfie]);
+
+  useEffect(() => {
+    if (!chooserOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setChooserOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [chooserOpen]);
+
+  const startWithPhoto = () => {
+    if (isMobile) {
+      setChooserOpen(true);
+      return;
+    }
+    // Desktop: open the file picker directly (gallery / files).
+    document.getElementById(TRYON_GALLERY_INPUT_ID)?.click();
+  };
+
+  const chooser =
+    mounted && isMobile
+      ? createPortal(
+          <AnimatePresence>
+            {chooserOpen ? (
+              <motion.div
+                key="photo-chooser"
+                className="fixed inset-0 z-[120] flex items-end justify-center p-4 sm:items-center md:hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <button
+                  type="button"
+                  aria-label="Close photo options"
+                  className="absolute inset-0 bg-black/65"
+                  onClick={() => setChooserOpen(false)}
+                />
+                <motion.div
+                  role="dialog"
+                  aria-modal="true"
+                  aria-label="Choose a photo source"
+                  initial={{ y: 48, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: 32, opacity: 0 }}
+                  transition={{ type: 'spring', stiffness: 360, damping: 32 }}
+                  className="relative z-10 w-full max-w-sm rounded-[24px] border border-white/10 bg-[#1c1e21] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] font-medium tracking-[0.2em] text-accent-cyan uppercase">Your photo</p>
+                      <h3 className="mt-1 text-lg font-semibold text-white">How do you want to start?</h3>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="Close"
+                      onClick={() => setChooserOpen(false)}
+                      className="rounded-full p-2 text-white/60 hover:bg-white/5 hover:text-white"
+                    >
+                      <X size={16} />
+                    </button>
+                  </div>
+                  <div className="grid gap-3">
+                    <label
+                      htmlFor={TRYON_CAMERA_INPUT_ID}
+                      className="flex cursor-pointer items-center gap-3 rounded-2xl bg-white px-4 py-3.5 text-left text-black transition hover:bg-[#e8e8e8]"
+                    >
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-black/8">
+                        <Camera size={18} />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold">Take a photo</span>
+                        <span className="block text-xs text-black/55">Use your camera</span>
+                      </span>
+                    </label>
+                    <label
+                      htmlFor={TRYON_GALLERY_INPUT_ID}
+                      className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/12 bg-white/5 px-4 py-3.5 text-left text-white transition hover:bg-white/10"
+                    >
+                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-white/10">
+                        <ImageIcon size={18} />
+                      </span>
+                      <span>
+                        <span className="block text-sm font-semibold">Upload from gallery</span>
+                        <span className="block text-xs text-white/50">Choose an existing photo</span>
+                      </span>
+                    </label>
+                  </div>
+                </motion.div>
+              </motion.div>
+            ) : null}
+          </AnimatePresence>,
+          document.body,
+        )
+      : null;
 
   return (
     <div className="grid md:h-[540px] md:grid-cols-2 lg:h-[580px]">
@@ -158,31 +264,20 @@ function UploadHero({
         <p className="mt-5 max-w-md text-base leading-relaxed text-white/70 sm:text-lg">
           One photo. Endless outfits. Watch pieces drape, move, and match on you — before anything ships.
         </p>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={onRequestCamera}
-            className="inline-flex w-fit rounded-full bg-[#d9d9d9] px-6 py-3 text-sm font-medium text-black"
-          >
-            {selfie ? 'Retake photo' : 'Take a photo'}
-          </motion.button>
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.04 }}
-            whileTap={{ scale: 0.97 }}
-            onClick={onRequestGallery}
-            className="inline-flex w-fit rounded-full border border-white/20 bg-white/5 px-6 py-3 text-sm font-medium text-white"
-          >
-            {selfie ? 'Choose another photo' : 'Upload from gallery'}
-          </motion.button>
-        </div>
+        <motion.button
+          type="button"
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.97 }}
+          onClick={startWithPhoto}
+          className="mt-8 inline-flex w-fit rounded-full bg-[#d9d9d9] px-6 py-3 text-sm font-medium text-black"
+        >
+          {selfie ? 'Use a different photo' : 'Start with your photo'}
+        </motion.button>
         <p className="mt-8 text-[11px] leading-relaxed text-white/35 md:mt-10">
           Previews are experimental and may not match real fit. For inspiration only.
         </p>
       </div>
-      <div className="relative aspect-[4/5] p-4 md:aspect-auto md:h-full md:p-5">
+      <div className="relative aspect-[4/5] min-w-0 p-4 md:aspect-auto md:h-full md:p-5">
         <div className="relative h-full overflow-hidden rounded-[22px] bg-[#e7e7e7]">
           <AnimatePresence mode="wait">
             <motion.img
@@ -208,6 +303,7 @@ function UploadHero({
           </motion.button>
         </div>
       </div>
+      {chooser}
     </div>
   );
 }
