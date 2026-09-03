@@ -16,6 +16,8 @@ import {
   wishlistIds,
 } from '../stores/shop';
 
+type Phase = 'closed' | 'open' | 'closing';
+
 export default function Drawers() {
   const drawer = useStore(openDrawer, { ssr: 'initial' });
   const items = useStore(cartItems, { ssr: 'initial' });
@@ -28,82 +30,102 @@ export default function Drawers() {
   const overlayRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLElement>(null);
   const panelX = useMotionValue(0);
-  const open = drawer === 'cart' || drawer === 'wishlist';
-  const [visible, setVisible] = useState(false);
-  const activeDrawer = useRef<'cart' | 'wishlist'>('cart');
+  const storeOpen = drawer === 'cart' || drawer === 'wishlist';
+  const [phase, setPhase] = useState<Phase>('closed');
+  const kindRef = useRef<'cart' | 'wishlist'>('cart');
+  const swipeClosing = useRef(false);
 
-  if (open) activeDrawer.current = drawer;
+  if (storeOpen) kindRef.current = drawer;
+
+  const panelWidth = () => {
+    if (panelRef.current?.offsetWidth) return panelRef.current.offsetWidth;
+    if (typeof window === 'undefined') return 448;
+    return Math.min(window.innerWidth, 448);
+  };
 
   const scrimOpacity = useTransform(panelX, (value) => {
-    const width = panelRef.current?.offsetWidth || 400;
-    return Math.max(0.12, 1 - value / Math.max(width, 1));
+    const width = typeof window === 'undefined' ? 448 : panelWidth();
+    return Math.max(0, 0.55 * (1 - value / Math.max(width, 1)));
   });
 
-  const close = () => openDrawer.set(null);
+  const phaseRef = useRef<Phase>('closed');
+  phaseRef.current = phase;
+
+  const finishClose = () => {
+    phaseRef.current = 'closed';
+    setPhase('closed');
+    panelX.set(0);
+    swipeClosing.current = false;
+    if (openDrawer.get() !== null) openDrawer.set(null);
+  };
+
+  const requestClose = (fromSwipe = false) => {
+    if (phaseRef.current === 'closing' || phaseRef.current === 'closed') return;
+    swipeClosing.current = fromSwipe;
+    phaseRef.current = 'closing';
+    setPhase('closing');
+    if (openDrawer.get() !== null) openDrawer.set(null);
+
+    if (fromSwipe || reduceMotion) {
+      finishClose();
+      return;
+    }
+
+    const width = panelWidth();
+    void animate(panelX, width, { duration: 0.2, ease: [0.22, 1, 0.36, 1] }).then(finishClose);
+  };
 
   useEffect(() => {
-    if (open) {
-      setVisible(true);
+    if (storeOpen) {
+      swipeClosing.current = false;
+      phaseRef.current = 'open';
+      setPhase('open');
       const width = typeof window !== 'undefined' ? Math.min(window.innerWidth, 448) : 448;
       if (reduceMotion) {
         panelX.set(0);
         return;
       }
       panelX.set(width);
-      const frame = requestAnimationFrame(() => {
-        void animate(panelX, 0, { type: 'spring', stiffness: 320, damping: 34 });
+      const id = requestAnimationFrame(() => {
+        void animate(panelX, 0, { type: 'spring', stiffness: 340, damping: 36 });
       });
-      return () => cancelAnimationFrame(frame);
+      return () => cancelAnimationFrame(id);
     }
 
-    if (!visible) return;
-
-    const width = panelRef.current?.offsetWidth || Math.min(window.innerWidth, 448);
-    if (reduceMotion) {
-      setVisible(false);
-      panelX.set(0);
-      return;
+    // Closed from outside while still open (e.g. programmatic) — animate out once.
+    if (phaseRef.current === 'open' && !swipeClosing.current) {
+      requestClose(false);
     }
-
-    let cancelled = false;
-    void animate(panelX, width, { duration: 0.2, ease: [0.22, 1, 0.36, 1] }).then(() => {
-      if (cancelled) return;
-      setVisible(false);
-      panelX.set(0);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps -- intentional open-only trigger
+  }, [storeOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useSwipeToDismiss({
-    enabled: visible && open && !reduceMotion,
+    enabled: phase === 'open' && !reduceMotion,
     targetRef: overlayRef,
     requireTargetHit: true,
     x: panelX,
-    onCommit: close,
-    maxOffset: () => panelRef.current?.offsetWidth ?? Math.min(window.innerWidth, 448),
+    onCommit: () => requestClose(true),
+    maxOffset: panelWidth,
     ignoreSelector: '',
-    distanceThreshold: 96,
+    distanceThreshold: 88,
   });
 
-  if (!visible) return null;
+  if (phase === 'closed') return null;
 
-  const kind = open ? drawer : activeDrawer.current;
+  const kind = storeOpen ? drawer : kindRef.current;
 
   return (
     <div ref={overlayRef} className="fixed inset-0 z-[70] flex justify-end overflow-hidden">
       <motion.button
         type="button"
-        className="absolute inset-0 bg-black/55 backdrop-blur-[2px]"
+        className="absolute inset-0 bg-black backdrop-blur-[2px]"
         aria-label="Close panel"
         style={{ opacity: scrimOpacity }}
-        onClick={close}
+        onClick={() => requestClose(false)}
       />
       <motion.aside
         ref={panelRef}
         style={{ x: panelX }}
-        className="relative flex h-full w-full max-w-md flex-col border-l border-white/10 bg-ink-soft shadow-soft"
+        className="relative flex h-full w-full max-w-md flex-col border-l border-white/10 bg-ink-soft shadow-soft will-change-transform"
       >
         <div className="flex justify-center pt-3 md:hidden" aria-hidden>
           <span className="h-1 w-10 rounded-full bg-white/20" />
@@ -114,7 +136,7 @@ export default function Drawers() {
           </h2>
           <button
             type="button"
-            onClick={close}
+            onClick={() => requestClose(false)}
             className="rounded-full p-2 text-mist transition hover:bg-white/5 hover:text-snow"
             aria-label="Close"
           >

@@ -1,29 +1,25 @@
 import { useEffect, useRef, type RefObject } from 'react';
-import { animate, type MotionValue } from 'framer-motion';
+import { animate, type AnimationPlaybackControls, type MotionValue } from 'framer-motion';
 
 interface UseSwipeToDismissOptions {
   enabled?: boolean;
-  /** Element that owns the gesture. Defaults to window/document. */
   targetRef?: RefObject<HTMLElement | null>;
-  /** Motion value driving horizontal position (px). */
   x: MotionValue<number>;
-  /** Called when the swipe commits (close / go back). */
   onCommit: () => void;
-  /** Max drag distance. Defaults to viewport width. */
   maxOffset?: number | (() => number);
   distanceThreshold?: number;
   velocityThreshold?: number;
-  /** Ignore swipes that start on these selectors (horizontal carousels, etc.). */
   ignoreSelector?: string;
-  /** When true, only start from the left screen edge. */
   edgeOnly?: boolean;
   edgeWidth?: number;
-  /** Restrict tracking to touches that begin inside targetRef (when set). */
   requireTargetHit?: boolean;
+  /** Called while dragging (0–1 progress). */
+  onProgress?: (progress: number) => void;
 }
 
 /**
- * Right-swipe dismiss with direction lock so vertical scrolling still works.
+ * Right-swipe dismiss with direction lock. Uses transform-only motion values.
+ * Does NOT reset `x` after commit — the caller owns enter/exit lifecycle.
  */
 export function useSwipeToDismiss({
   enabled = true,
@@ -37,13 +33,17 @@ export function useSwipeToDismiss({
   edgeOnly = false,
   edgeWidth = 28,
   requireTargetHit = false,
+  onProgress,
 }: UseSwipeToDismissOptions) {
   const onCommitRef = useRef(onCommit);
+  const onProgressRef = useRef(onProgress);
   onCommitRef.current = onCommit;
+  onProgressRef.current = onProgress;
 
   useEffect(() => {
     if (!enabled) return;
 
+    let activeAnim: AnimationPlaybackControls | null = null;
     const startX = { current: 0 };
     const startY = { current: 0 };
     const tracking = { current: false };
@@ -58,8 +58,15 @@ export function useSwipeToDismiss({
       return window.innerWidth;
     };
 
+    const stopAnim = () => {
+      activeAnim?.stop();
+      activeAnim = null;
+    };
+
     const springBack = () => {
-      void animate(x, 0, { type: 'spring', stiffness: 420, damping: 38 });
+      stopAnim();
+      activeAnim = animate(x, 0, { type: 'spring', stiffness: 460, damping: 40 });
+      onProgressRef.current?.(0);
     };
 
     const reset = () => {
@@ -90,6 +97,7 @@ export function useSwipeToDismiss({
       if (requireTargetHit && !isInsideTarget(event.target)) return;
       if (shouldIgnore(event.target)) return;
 
+      stopAnim();
       tracking.current = true;
       locked.current = false;
       startX.current = touch.clientX;
@@ -126,7 +134,10 @@ export function useSwipeToDismiss({
 
       if (!locked.current) return;
       if (event.cancelable) event.preventDefault();
-      x.set(Math.max(0, Math.min(dx, getMax() * 0.96)));
+      const max = getMax();
+      const next = Math.max(0, Math.min(dx, max * 0.98));
+      x.set(next);
+      onProgressRef.current?.(next / Math.max(max, 1));
     };
 
     const onEnd = () => {
@@ -142,25 +153,27 @@ export function useSwipeToDismiss({
         return;
       }
 
-      const threshold = distanceThreshold ?? Math.min(110, window.innerWidth * 0.26);
+      const max = getMax();
+      const threshold = distanceThreshold ?? Math.min(100, window.innerWidth * 0.24);
       if (current > threshold || velocity.current > velocityThreshold) {
-        void animate(x, getMax(), { duration: 0.2, ease: [0.22, 1, 0.36, 1] }).then(() => {
+        stopAnim();
+        activeAnim = animate(x, max, { duration: 0.18, ease: [0.22, 1, 0.36, 1] });
+        void activeAnim.then(() => {
+          onProgressRef.current?.(1);
           onCommitRef.current();
-          x.set(0);
+          // Intentionally do NOT reset x — prevents flash/shake.
         });
         return;
       }
       springBack();
     };
 
-    const optsPassive = { passive: true } as const;
-    const optsActive = { passive: false } as const;
-
-    window.addEventListener('touchstart', onStart, optsPassive);
-    window.addEventListener('touchmove', onMove, optsActive);
+    window.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchmove', onMove, { passive: false });
     window.addEventListener('touchend', onEnd);
     window.addEventListener('touchcancel', reset);
     return () => {
+      stopAnim();
       document.documentElement.classList.remove('overflow-x-hidden');
       window.removeEventListener('touchstart', onStart);
       window.removeEventListener('touchmove', onMove);

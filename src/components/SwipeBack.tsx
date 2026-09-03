@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { animate, motion, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
+import { useMotionValue, useReducedMotion } from 'framer-motion';
 import { useStore } from '@nanostores/react';
 import { useSwipeToDismiss } from '../hooks/useSwipeToDismiss';
+import {
+  capturePageSnapshot,
+  hasPageSnapshot,
+  releasePageSnapshot,
+  setSnapshotDim,
+} from '../lib/pageSnapshot';
 import { openDrawer } from '../stores/shop';
 
 function canGoBack(): boolean {
@@ -23,18 +29,28 @@ function goBack() {
     .catch(() => window.location.assign('/'));
 }
 
+function resetRootStyles(root: HTMLElement | null) {
+  if (!root) return;
+  root.style.transform = '';
+  root.style.willChange = '';
+  root.style.boxShadow = '';
+}
+
 /**
- * Full-screen swipe-right → previous page (same gesture as cart close).
- * Disabled on home, when a drawer is open, or when reduced motion is preferred.
+ * Full-screen swipe-right → previous page.
+ * Peek layer is one frozen snapshot of the page you left (same idea as cart over collection).
  */
 export default function SwipeBack() {
   const drawer = useStore(openDrawer, { ssr: 'initial' });
   const reduceMotion = useReducedMotion();
   const rootRef = useRef<HTMLElement | null>(null);
   const x = useMotionValue(0);
-  const dim = useTransform(x, [0, 320], [0, 0.42]);
+  const committing = useRef(false);
+  const isPopNav = useRef(false);
   const [enabled, setEnabled] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+
+  const drawerOpen = drawer === 'cart' || drawer === 'wishlist';
 
   useEffect(() => {
     rootRef.current = document.getElementById('swipe-back-root');
@@ -49,58 +65,79 @@ export default function SwipeBack() {
   }, []);
 
   useEffect(() => {
-    const sync = () => setEnabled(canGoBack());
-    sync();
-    document.addEventListener('astro:page-load', sync);
-    window.addEventListener('popstate', sync);
-    return () => {
-      document.removeEventListener('astro:page-load', sync);
-      window.removeEventListener('popstate', sync);
+    const sync = () => setEnabled(canGoBack() && hasPageSnapshot());
+
+    const onPopState = () => {
+      isPopNav.current = true;
+      sync();
     };
-  }, []);
+
+    const onBeforePrep = () => {
+      // Back navigations must not overwrite the peek with the page being left.
+      if (committing.current || isPopNav.current) return;
+      const root = document.getElementById('swipe-back-root');
+      if (root) capturePageSnapshot(root);
+    };
+
+    const onPageLoad = () => {
+      const root = rootRef.current ?? document.getElementById('swipe-back-root');
+      x.set(0);
+      resetRootStyles(root);
+
+      if (committing.current || isPopNav.current) {
+        releasePageSnapshot();
+      }
+      // Forward client nav: keep the snapshot captured in before-preparation.
+
+      committing.current = false;
+      isPopNav.current = false;
+      sync();
+    };
+
+    sync();
+    document.addEventListener('astro:before-preparation', onBeforePrep);
+    document.addEventListener('astro:page-load', onPageLoad);
+    window.addEventListener('popstate', onPopState);
+    return () => {
+      document.removeEventListener('astro:before-preparation', onBeforePrep);
+      document.removeEventListener('astro:page-load', onPageLoad);
+      window.removeEventListener('popstate', onPopState);
+    };
+  }, [x]);
 
   useEffect(() => {
     const root = rootRef.current ?? document.getElementById('swipe-back-root');
     if (!root) return;
-    const unsubscribe = x.on('change', (value) => {
-      root.style.transform = `translate3d(${value}px, 0, 0)`;
-      root.style.willChange = value === 0 ? 'auto' : 'transform';
+
+    const unsub = x.on('change', (value) => {
+      root.style.transform = `translate3d(${value}px,0,0)`;
+      if (value > 0.5) {
+        root.style.willChange = 'transform';
+        root.style.boxShadow = '-10px 0 28px rgba(0,0,0,0.32)';
+      } else {
+        root.style.willChange = 'auto';
+        root.style.boxShadow = '';
+      }
     });
+
     return () => {
-      unsubscribe();
-      root.style.transform = '';
-      root.style.willChange = '';
+      unsub();
+      if (!committing.current) resetRootStyles(root);
     };
   }, [x]);
-
-  const drawerOpen = drawer === 'cart' || drawer === 'wishlist';
 
   useSwipeToDismiss({
     enabled: enabled && isMobile && !drawerOpen && !reduceMotion,
     x,
+    onProgress: (progress) => setSnapshotDim(progress),
     onCommit: () => {
-      const root = rootRef.current ?? document.getElementById('swipe-back-root');
+      committing.current = true;
       goBack();
-      requestAnimationFrame(() => {
-        x.set(0);
-        if (root) {
-          root.style.transform = '';
-          root.style.willChange = '';
-        }
-      });
     },
     maxOffset: () => window.innerWidth,
     ignoreSelector: '[data-no-swipe-back], [data-horizontal-scroll], .no-scrollbar',
-    distanceThreshold: 96,
+    distanceThreshold: 88,
   });
 
-  if (reduceMotion || !enabled || !isMobile || drawerOpen) return null;
-
-  return (
-    <motion.div
-      aria-hidden
-      className="pointer-events-none fixed inset-0 z-[40] bg-black md:hidden"
-      style={{ opacity: dim }}
-    />
-  );
+  return null;
 }
