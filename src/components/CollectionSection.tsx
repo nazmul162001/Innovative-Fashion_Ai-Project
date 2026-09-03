@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { SlidersHorizontal, X } from 'lucide-react';
@@ -57,11 +59,11 @@ export default function CollectionSection({ initialCategory }: CollectionSection
     syncCategory();
     window.addEventListener(CATEGORY_EVENT, onCategory);
     window.addEventListener('popstate', syncCategory);
-    document.addEventListener('astro:page-load', syncCategory);
+    window.addEventListener('if:navigation', syncCategory);
     return () => {
       window.removeEventListener(CATEGORY_EVENT, onCategory);
       window.removeEventListener('popstate', syncCategory);
-      document.removeEventListener('astro:page-load', syncCategory);
+      window.removeEventListener('if:navigation', syncCategory);
     };
   }, []);
 

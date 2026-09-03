@@ -1,3 +1,5 @@
+'use client';
+
 import { motion, animate, useMotionValue, useReducedMotion, useTransform } from 'framer-motion';
 import { Minus, Plus, X } from 'lucide-react';
 import { useStore } from '@nanostores/react';

@@ -1,3 +1,5 @@
+'use client';
+
 import { cn, formatPrice } from '../lib/utils';
 
 interface PriceRangeSliderProps {

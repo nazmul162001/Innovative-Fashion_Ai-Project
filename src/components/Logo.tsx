@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { cn } from '../lib/utils';
 import { BRAND } from '../lib/brand';
 
@@ -8,7 +9,7 @@ interface LogoProps {
 
 export default function Logo({ className, compact = false }: LogoProps) {
   return (
-    <a href="/" className={cn('group flex min-w-0 items-center gap-2', className)} aria-label={`${BRAND.name} home`}>
+    <Link href="/" className={cn('group flex min-w-0 items-center gap-2', className)} aria-label={`${BRAND.name} home`}>
       <span className="relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-lg border border-dark-border bg-dark-surface">
         <svg viewBox="0 0 32 32" className="h-8 w-8" fill="none" aria-hidden="true">
           <rect x="10" y="7.5" width="12" height="2.4" rx="1.2" fill="currentColor" />
@@ -28,6 +29,6 @@ export default function Logo({ className, compact = false }: LogoProps) {
           <span className="hidden sm:inline">{BRAND.name}</span>
         </span>
       )}
-    </a>
+    </Link>
   );
 }

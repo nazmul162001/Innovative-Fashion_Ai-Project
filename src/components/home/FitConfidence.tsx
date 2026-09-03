@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, type FormEvent } from 'react';
 import { ArrowRight, RefreshCcw, Ruler, Truck, Sparkles } from 'lucide-react';
 import { showToast } from '../../stores/shop';

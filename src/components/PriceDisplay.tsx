@@ -1,3 +1,5 @@
+'use client';
+
 import { cn, formatDiscountPercent, formatPrice, getProductPricing } from '../lib/utils';
 import type { Product } from '../types/product';
 

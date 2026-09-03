@@ -19,7 +19,7 @@ export function applyHomeUrl(url: URL, push: boolean) {
   const next = `${url.pathname}${url.search}${url.hash}`;
   const current = `${window.location.pathname}${window.location.search}${window.location.hash}`;
   if (push && next !== current) {
-    // Preserve Astro ClientRouter history fields (index / scrollX / scrollY).
+    // Preserve Next/history scroll fields on soft category navigations.
     const prev =
       window.history.state && typeof window.history.state === 'object' ? window.history.state : {};
     window.history.pushState(

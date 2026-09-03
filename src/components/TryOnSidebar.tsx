@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { AnimatePresence, motion, useMotionValue, animate } from 'framer-motion';
 import { Bookmark, ChevronDown, ChevronLeft, ChevronRight, RefreshCw, Share2, X } from 'lucide-react';

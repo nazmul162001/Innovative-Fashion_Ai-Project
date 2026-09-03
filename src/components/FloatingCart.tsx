@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ShoppingBag } from 'lucide-react';
@@ -35,7 +37,11 @@ export default function FloatingCart() {
             y: 0,
           }}
           exit={{ opacity: 0, scale: 0.75, y: 20 }}
-          transition={{ type: 'spring', stiffness: 420, damping: 24 }}
+          transition={
+            pulse > 0
+              ? { duration: 0.45, ease: [0.22, 1, 0.36, 1] }
+              : { type: 'spring', stiffness: 420, damping: 24 }
+          }
           className="fixed right-4 bottom-[max(1.25rem,env(safe-area-inset-bottom))] z-[72] grid h-14 w-14 place-items-center rounded-full bg-accent-blue text-white shadow-[0_12px_40px_rgba(79,128,255,0.45)] md:right-6"
         >
           <ShoppingBag size={22} />

@@ -1,3 +1,5 @@
+'use client';
+
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useStore } from '@nanostores/react';
 import { toastMessage } from '../stores/shop';

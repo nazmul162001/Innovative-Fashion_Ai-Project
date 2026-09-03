@@ -1,14 +1,11 @@
+'use client';
+
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import type { Product } from '../types/product';
 import ProductGallery from './ProductGallery';
 import ProductSelectionPanel from './ProductSelectionPanel';
 import CompleteTheLook from './CompleteTheLook';
-
-declare global {
-  interface Window {
-    __ifIsPopNav?: boolean;
-  }
-}
 
 interface ProductDetailProps {
   product: Product;
@@ -16,6 +13,8 @@ interface ProductDetailProps {
 }
 
 export default function ProductDetail({ product, related }: ProductDetailProps) {
+  const router = useRouter();
+
   useEffect(() => {
     // Device back restores prior scroll; only force top on forward entry.
     if (window.__ifIsPopNav) return;
@@ -31,14 +30,7 @@ export default function ProductDetail({ product, related }: ProductDetailProps) 
           <ProductGallery name={product.name} images={product.images} productId={product.id} />
         </div>
         <div className="min-w-0 w-full max-w-full">
-          <ProductSelectionPanel
-            product={product}
-            onTryOn={() => {
-              void import('astro:transitions/client').then(({ navigate }) => navigate('/try-on')).catch(() => {
-                window.location.assign('/try-on');
-              });
-            }}
-          />
+          <ProductSelectionPanel product={product} onTryOn={() => router.push('/try-on')} />
         </div>
       </div>
       <CompleteTheLook items={[product, ...related].slice(0, 4)} />

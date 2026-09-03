@@ -1,0 +1,9 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "astro.language-server.enabled": false,
+  "astro.content-intellisense": false,
+  "files.watcherExclude": {
+    "**/.astro/**": true
+  }
+}

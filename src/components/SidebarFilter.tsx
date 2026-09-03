@@ -1,3 +1,5 @@
+'use client';
+
 import { COLOR_SWATCHES, PRICE_BOUNDS, SIZES, type FilterState, type Fit, type Size } from '../types/product';
 import { cn } from '../lib/utils';
 import PriceRangeSlider from './PriceRangeSlider';

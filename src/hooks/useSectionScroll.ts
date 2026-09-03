@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { gsap, ScrollTrigger, useGSAP } from '../lib/gsap';
+import { NAV_EVENT } from '../providers/NavigationEffects';
 
 let refreshBound = false;
 
@@ -7,8 +8,7 @@ function bindScrollRefresh() {
   if (refreshBound || typeof document === 'undefined') return;
   refreshBound = true;
   const refresh = () => ScrollTrigger.refresh();
-  document.addEventListener('astro:page-load', refresh);
-  document.addEventListener('astro:after-swap', refresh);
+  window.addEventListener(NAV_EVENT, refresh);
 }
 
 export function useSectionScroll<T extends HTMLElement = HTMLElement>() {

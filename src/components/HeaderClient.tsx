@@ -1,18 +1,21 @@
+'use client';
+
 import { useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, Menu, Search, ShoppingBag, User, X } from 'lucide-react';
 import { useStore } from '@nanostores/react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { NAV_LINKS } from '../types/product';
 import { products } from '../data/products';
 import { cartCount, openDrawer, wishlistIds } from '../stores/shop';
+import { NAV_EVENT } from '../providers/NavigationEffects';
 import Logo from './Logo';
 
-interface HeaderClientProps {
-  pathname: string;
-  search: string;
-}
-
-export default function HeaderClient({ pathname, search }: HeaderClientProps) {
+export default function HeaderClient() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const search = searchParams.toString() ? `?${searchParams.toString()}` : '';
   const count = useStore(cartCount, { ssr: 'initial' });
   const saved = useStore(wishlistIds, { ssr: 'initial' });
   const drawer = useStore(openDrawer, { ssr: 'initial' });
@@ -26,11 +29,11 @@ export default function HeaderClient({ pathname, search }: HeaderClientProps) {
     sync();
     window.addEventListener('if:category', sync);
     window.addEventListener('popstate', sync);
-    document.addEventListener('astro:page-load', sync);
+    window.addEventListener(NAV_EVENT, sync);
     return () => {
       window.removeEventListener('if:category', sync);
       window.removeEventListener('popstate', sync);
-      document.removeEventListener('astro:page-load', sync);
+      window.removeEventListener(NAV_EVENT, sync);
     };
   }, [search]);
   const navOpen = drawer === 'nav';
@@ -140,7 +143,7 @@ export default function HeaderClient({ pathname, search }: HeaderClientProps) {
 
       <nav className="hidden justify-center gap-4 overflow-x-auto px-4 pb-3 md:flex lg:gap-8" aria-label="Primary">
         {NAV_LINKS.map((link) => (
-          <a
+          <Link
             key={link.label}
             href={link.href}
             className={`text-[12px] font-medium tracking-[0.18em] uppercase transition hover:text-snow ${
@@ -148,7 +151,7 @@ export default function HeaderClient({ pathname, search }: HeaderClientProps) {
             }`}
           >
             {link.label}
-          </a>
+          </Link>
         ))}
       </nav>
 
@@ -162,14 +165,14 @@ export default function HeaderClient({ pathname, search }: HeaderClientProps) {
           >
             <div className="flex flex-col gap-1 px-4 py-3">
               {NAV_LINKS.map((link) => (
-                <a
+                <Link
                   key={link.label}
                   href={link.href}
                   onClick={() => openDrawer.set(null)}
                   className="rounded-lg px-3 py-2 text-sm tracking-[0.14em] uppercase text-fog"
                 >
                   {link.label}
-                </a>
+                </Link>
               ))}
               <button
                 type="button"
@@ -208,14 +211,16 @@ function SearchResults({
     <ul className="absolute z-20 mt-2 w-full overflow-hidden rounded-2xl border border-white/10 bg-ink-soft shadow-soft">
       {matches.map((product) => (
         <li key={product.id}>
-          <a
+          <Link
             href={`/product/${product.id}`}
+            scroll={false}
             onClick={onClose}
             className="flex items-center gap-3 px-3 py-2.5 hover:bg-white/5"
           >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={product.images[0]} alt="" className="h-10 w-10 rounded-lg object-cover" />
             <span className="text-sm">{product.name}</span>
-          </a>
+          </Link>
         </li>
       ))}
     </ul>
