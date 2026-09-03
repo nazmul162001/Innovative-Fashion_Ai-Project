@@ -1,3 +1,5 @@
+'use client';
+
 import { ArrowUpRight } from 'lucide-react';
 import { unsplash } from '../../lib/utils';
 import { useSectionScroll } from '../../hooks/useSectionScroll';

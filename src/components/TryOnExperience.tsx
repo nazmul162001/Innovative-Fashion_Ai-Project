@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronUp, X } from 'lucide-react';

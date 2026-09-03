@@ -1,3 +1,5 @@
+'use client';
+
 import { ArrowRight } from 'lucide-react';
 import { lookCollections } from '../../data/looks';
 import { products } from '../../data/products';

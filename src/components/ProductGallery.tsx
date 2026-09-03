@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn, getProductPricing, responsiveSrcSet } from '../lib/utils';

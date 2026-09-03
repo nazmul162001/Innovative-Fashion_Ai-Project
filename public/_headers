@@ -1,10 +1,10 @@
-# Cloudflare Pages / Netlify-compatible static headers
+# Cloudflare Pages / Netlify-compatible static headers (mirrored in next.config.ts)
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
 
-/_astro/*
+/_next/static/*
   Cache-Control: public, max-age=31536000, immutable
 
 /icons/*

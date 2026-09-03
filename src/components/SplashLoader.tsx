@@ -1,3 +1,5 @@
+'use client';
+
 import { useLayoutEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';

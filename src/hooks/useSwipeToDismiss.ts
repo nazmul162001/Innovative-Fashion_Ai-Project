@@ -157,11 +157,14 @@ export function useSwipeToDismiss({
       const threshold = distanceThreshold ?? Math.min(100, window.innerWidth * 0.24);
       if (current > threshold || velocity.current > velocityThreshold) {
         stopAnim();
-        activeAnim = animate(x, max, { duration: 0.18, ease: [0.22, 1, 0.36, 1] });
-        void activeAnim.then(() => {
-          onProgressRef.current?.(1);
-          onCommitRef.current();
-          // Intentionally do NOT reset x — prevents flash/shake.
+        activeAnim = animate(x, max, {
+          duration: 0.18,
+          ease: [0.22, 1, 0.36, 1],
+          onComplete: () => {
+            onProgressRef.current?.(1);
+            onCommitRef.current();
+            // Intentionally do NOT reset x — prevents flash/shake.
+          },
         });
         return;
       }

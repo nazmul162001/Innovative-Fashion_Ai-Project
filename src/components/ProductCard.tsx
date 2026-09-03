@@ -1,4 +1,7 @@
+'use client';
+
 import { type ReactNode } from 'react';
+import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeftRight, Heart, Search } from 'lucide-react';
 import { useStore } from '@nanostores/react';
@@ -38,9 +41,9 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
 
   return (
     <article className="product-card group relative">
-      <a href={href} className="absolute inset-0 z-[1]" aria-label={`View ${product.name}`}>
+      <Link href={href} scroll={false} className="absolute inset-0 z-[1]" prefetch={true} aria-label={`View ${product.name}`}>
         <span className="sr-only">{product.name}</span>
-      </a>
+      </Link>
       <div className="dark-card-glow relative overflow-hidden rounded-2xl">
         <img
           src={product.images[0]}

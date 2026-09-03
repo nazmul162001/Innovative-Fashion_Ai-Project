@@ -1,3 +1,6 @@
+'use client';
+
+import Link from 'next/link';
 import type { Product } from '../types/product';
 import { getProductPricing, responsiveSrcSet } from '../lib/utils';
 import { DiscountBadge, PriceDisplay } from './PriceDisplay';
@@ -16,8 +19,9 @@ export default function CompleteTheLook({ items }: CompleteTheLookProps) {
         {items.map((item) => {
           const { discountPercent } = getProductPricing(item);
           return (
-            <a key={item.id} href={`/product/${item.id}`} className="product-card group min-w-0">
+            <Link key={item.id} href={`/product/${item.id}`} scroll={false} className="product-card group min-w-0" prefetch>
               <div className="dark-card-glow relative overflow-hidden rounded-2xl">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={item.images[0]}
                   srcSet={responsiveSrcSet(item.images[0], [280, 420, 560])}
@@ -31,7 +35,7 @@ export default function CompleteTheLook({ items }: CompleteTheLookProps) {
               </div>
               <p className="mt-3 truncate text-sm text-snow">{item.name}</p>
               <PriceDisplay product={item} className="mt-0.5" />
-            </a>
+            </Link>
           );
         })}
       </div>

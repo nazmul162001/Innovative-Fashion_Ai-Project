@@ -1,3 +1,5 @@
+'use client';
+
 import { Camera, ScanLine, Sparkles, ShieldCheck } from 'lucide-react';
 import { useSectionScroll } from '../../hooks/useSectionScroll';
 
