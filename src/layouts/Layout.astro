@@ -8,6 +8,7 @@ import Drawers from '../components/Drawers';
 import Toaster from '../components/Toaster';
 import InstallPrompt from '../components/InstallPrompt';
 import FloatingCart from '../components/FloatingCart';
+import SwipeBack from '../components/SwipeBack';
 
 interface Props {
   title: string;
@@ -84,14 +85,17 @@ const { title, description = BRAND.description } = Astro.props;
     >
       Skip to content
     </a>
-    <Header />
-    <main id="main">
-      <slot />
-    </main>
-    <Footer />
+    <div id="swipe-back-root" class="min-h-screen max-w-full overflow-x-clip">
+      <Header />
+      <main id="main">
+        <slot />
+      </main>
+      <Footer />
+    </div>
     <Drawers client:load />
     <Toaster client:load />
     <FloatingCart client:load />
+    <SwipeBack client:load />
     <InstallPrompt client:only="react" />
   </body>
 </html>

@@ -280,7 +280,7 @@ export default function TryOnSidebar({ look, open, onClose, onSelectLook }: TryO
                   <span className="underline decoration-white/70 underline-offset-4">Recently tried</span>
                 </p>
                 <div className="relative mt-4">
-                  <div ref={recentScroller} className="no-scrollbar flex gap-3 overflow-x-auto px-8 pb-1">
+                  <div ref={recentScroller} className="no-scrollbar flex gap-3 overflow-x-auto px-8 pb-1" data-no-swipe-back data-horizontal-scroll>
                     {history.length === 0 ? (
                       <p className="w-full py-6 text-center text-xs text-white/40">No looks yet</p>
                     ) : (
