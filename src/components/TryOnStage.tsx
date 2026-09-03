@@ -42,6 +42,15 @@ export default function TryOnStage({ selfie, onStepChange }: TryOnStageProps) {
   }, [selfie]);
 
   useEffect(() => {
+    if (step !== 'size') return;
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    // Double rAF waits until the size step has laid out, then pins viewport to top.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => window.scrollTo(0, 0));
+    });
+  }, [step]);
+
+  useEffect(() => {
     if (step !== 'generating') return;
     const timer = window.setTimeout(() => setStep('poses'), GENERATE_MS);
     return () => window.clearTimeout(timer);

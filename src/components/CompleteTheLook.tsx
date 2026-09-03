@@ -1,5 +1,5 @@
 import type { Product } from '../types/product';
-import { getProductPricing } from '../lib/utils';
+import { getProductPricing, responsiveSrcSet } from '../lib/utils';
 import { DiscountBadge, PriceDisplay } from './PriceDisplay';
 
 interface CompleteTheLookProps {
@@ -20,8 +20,12 @@ export default function CompleteTheLook({ items }: CompleteTheLookProps) {
               <div className="dark-card-glow relative overflow-hidden rounded-2xl">
                 <img
                   src={item.images[0]}
+                  srcSet={responsiveSrcSet(item.images[0], [280, 420, 560])}
+                  sizes="(max-width: 768px) 45vw, 220px"
                   alt={item.name}
                   className="studio-image-light aspect-[3/4] w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
                 <DiscountBadge percent={discountPercent} />
               </div>

@@ -9,7 +9,7 @@ export default function TryOnSpotlight() {
     <section
       id="try-on-studio"
       ref={ref}
-      className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-10"
+      className="cv-section mx-auto w-full max-w-7xl px-4 py-6 md:px-6 md:py-10"
     >
       <div className="dark-card-glow relative overflow-hidden rounded-[28px] md:rounded-[32px]">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_20%_20%,rgba(56,189,248,0.14),transparent_50%),radial-gradient(ellipse_at_90%_80%,rgba(79,128,255,0.12),transparent_46%)]" />

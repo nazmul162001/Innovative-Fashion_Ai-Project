@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowLeftRight, Heart, Search } from 'lucide-react';
 import { useStore } from '@nanostores/react';
 import type { Product } from '../types/product';
-import { cn, getProductPricing } from '../lib/utils';
+import { cn, getProductPricing, responsiveSrcSet } from '../lib/utils';
 import {
   addToCart,
   adjustLineQuantity,
@@ -44,6 +44,8 @@ export default function ProductCard({ product, onQuickView }: ProductCardProps) 
       <div className="dark-card-glow relative overflow-hidden rounded-2xl">
         <img
           src={product.images[0]}
+          srcSet={responsiveSrcSet(product.images[0], [360, 540, 720])}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 280px"
           alt={product.name}
           className="aspect-[4/5] w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           loading="lazy"

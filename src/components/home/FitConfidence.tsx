@@ -44,7 +44,7 @@ export default function FitConfidence() {
     <section
       id="confidence"
       ref={ref}
-      className="mx-auto w-full max-w-7xl px-4 pt-16 pb-8 md:px-6 md:pt-24 md:pb-10"
+      className="cv-section mx-auto w-full max-w-7xl px-4 pt-16 pb-8 md:px-6 md:pt-24 md:pb-10"
     >
       <div className="max-w-2xl">
         <p data-reveal className="text-[10px] font-medium tracking-[0.22em] text-accent-cyan uppercase sm:text-[11px]">

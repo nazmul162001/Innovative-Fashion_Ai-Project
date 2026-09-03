@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { cn, getProductPricing } from '../lib/utils';
+import { cn, getProductPricing, responsiveSrcSet } from '../lib/utils';
 import { DiscountBadge } from './PriceDisplay';
 
 interface ProductGalleryProps {
@@ -21,7 +21,11 @@ export default function ProductGallery({ name, images, productId }: ProductGalle
           <motion.img
             key={current}
             src={current}
+            srcSet={responsiveSrcSet(current, [480, 800, 1200])}
+            sizes="(max-width: 1024px) 100vw, 560px"
             alt={`${name} view ${active + 1}`}
+            fetchPriority="high"
+            decoding="async"
             initial={false}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -44,7 +48,15 @@ export default function ProductGallery({ name, images, productId }: ProductGalle
                 : 'border-transparent hover:border-white/20',
             )}
           >
-            <img src={image} alt={`${name} thumbnail ${index + 1}`} className="aspect-square w-full object-cover" />
+            <img
+              src={image}
+              srcSet={responsiveSrcSet(image, [120, 240])}
+              sizes="80px"
+              alt={`${name} thumbnail ${index + 1}`}
+              className="aspect-square w-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
           </button>
         ))}
       </div>

@@ -36,7 +36,7 @@ export default function ShopByIntent() {
     <section
       id="start-here"
       ref={ref}
-      className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-24"
+      className="cv-section mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-24"
     >
       <div className="flex max-w-2xl flex-col">
         <p data-reveal className="text-[10px] font-medium tracking-[0.22em] text-accent-cyan uppercase sm:text-[11px]">

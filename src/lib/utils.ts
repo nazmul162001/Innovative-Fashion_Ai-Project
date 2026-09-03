@@ -43,6 +43,21 @@ export function cn(...classes: Array<string | false | null | undefined>): string
   return classes.filter(Boolean).join(' ');
 }
 
+/** Optimized Unsplash URL — auto format (webp/avif when supported), sensible quality. */
 export function unsplash(photoId: string, width = 900): string {
-  return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${width}&q=80`;
+  return `https://images.unsplash.com/${photoId}?auto=format&fit=crop&w=${width}&q=72`;
+}
+
+/** Build a responsive srcset from an existing Unsplash URL (or any w= query URL). */
+export function responsiveSrcSet(src: string, widths: number[] = [360, 720, 1080]): string | undefined {
+  if (!src.includes('images.unsplash.com')) return undefined;
+  return widths
+    .map((width) => {
+      const next = src.includes('w=')
+        ? src.replace(/([?&])w=\d+/i, `$1w=${width}`)
+        : `${src}${src.includes('?') ? '&' : '?'}w=${width}`;
+      const withQ = next.includes('q=') ? next.replace(/([?&])q=\d+/i, '$1q=72') : `${next}&q=72`;
+      return `${withQ} ${width}w`;
+    })
+    .join(', ');
 }

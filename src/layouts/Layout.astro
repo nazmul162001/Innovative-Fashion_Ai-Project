@@ -34,10 +34,14 @@ const { title, description = BRAND.description } = Astro.props;
     <meta name="application-name" content={BRAND.short} />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
+    <!-- Critical third-party origins -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link rel="dns-prefetch" href="https://images.unsplash.com" />
+    <!-- Subset weights used by the UI — fewer bytes than 300–800. -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <title>{title}</title>
@@ -51,8 +55,6 @@ const { title, description = BRAND.description } = Astro.props;
           if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
         } catch (e) {}
 
-        // Mark soft navigations only AFTER the first real page-load.
-        // Do not use before-preparation — prefetch can set it too early and kill the splash.
         window.__ifPageLoads = 0;
         document.addEventListener('astro:page-load', function () {
           window.__ifPageLoads = (window.__ifPageLoads || 0) + 1;
@@ -85,8 +87,6 @@ const { title, description = BRAND.description } = Astro.props;
             }
             if (url.origin !== location.origin) return;
 
-            // In-app product / page links: scroll will reset on astro:page-load.
-            // Home category filters stay on `/` and are handled below.
             if (url.pathname !== '/' || location.pathname !== '/') return;
             event.preventDefault();
             event.stopPropagation();
@@ -119,9 +119,10 @@ const { title, description = BRAND.description } = Astro.props;
       </main>
       <Footer />
     </div>
-    <Drawers client:load />
-    <Toaster client:load />
-    <FloatingCart client:load />
+    <!-- Idle: keep first paint free; cart/toast still ready within ~1 tick after load. -->
+    <Drawers client:idle />
+    <Toaster client:idle />
+    <FloatingCart client:idle />
     <SplashLoader client:only="react" />
     <InstallPrompt client:only="react" />
   </body>

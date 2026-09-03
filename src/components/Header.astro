@@ -6,5 +6,5 @@ const search = Astro.url.search;
 ---
 
 <div transition:persist="site-header">
-  <HeaderClient client:load pathname={pathname} search={search} />
+  <HeaderClient client:idle pathname={pathname} search={search} />
 </div>

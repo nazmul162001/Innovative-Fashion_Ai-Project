@@ -35,7 +35,7 @@ export default function HowItWorks() {
     <section
       id="how-it-works"
       ref={ref}
-      className="relative mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-24"
+      className="cv-section relative mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-24"
     >
       <div className="max-w-2xl">
         <p data-reveal className="text-[10px] font-medium tracking-[0.22em] text-accent-cyan uppercase sm:text-[11px]">

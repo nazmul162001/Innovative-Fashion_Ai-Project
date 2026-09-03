@@ -19,7 +19,7 @@ export default function AtelierLooks() {
     <section
       id="atelier-edit"
       ref={ref}
-      className="mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-24"
+      className="cv-section mx-auto w-full max-w-7xl px-4 py-16 md:px-6 md:py-24"
     >
       <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
         <div className="max-w-xl">

@@ -58,11 +58,19 @@ export default function TryOnExperience() {
     };
   }, [selfie]);
 
+  useEffect(() => {
+    if (!selfie) return;
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    window.scrollTo(0, 0);
+  }, [selfie]);
+
   const onFile = (file: File | undefined) => {
     if (!file) return;
     if (selfie) URL.revokeObjectURL(selfie);
     const url = URL.createObjectURL(file);
     setSelfie(url);
+    if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    window.scrollTo(0, 0);
   };
 
   const onDockPointerDown = (event: ReactPointerEvent) => {
@@ -100,6 +108,31 @@ export default function TryOnExperience() {
       animate={{ paddingRight: pushFeed ? TRYON_SIDEBAR_RESERVE_PX : 0 }}
       transition={tryOnSidebarTransition}
     >
+      {/* Keep file inputs near the top so focus after pick does not scroll the page down. */}
+      <input
+        id={TRYON_GALLERY_INPUT_ID}
+        type="file"
+        accept="image/*"
+        className="pointer-events-none fixed top-0 left-0 h-px w-px opacity-0"
+        tabIndex={-1}
+        onChange={(event) => {
+          onFile(event.target.files?.[0]);
+          event.target.value = '';
+        }}
+      />
+      <input
+        id={TRYON_CAMERA_INPUT_ID}
+        type="file"
+        accept="image/*"
+        capture="user"
+        className="pointer-events-none fixed top-0 left-0 h-px w-px opacity-0"
+        tabIndex={-1}
+        onChange={(event) => {
+          onFile(event.target.files?.[0]);
+          event.target.value = '';
+        }}
+      />
+
       <TryOnStage selfie={selfie} onStepChange={setStep} />
 
       <motion.div
@@ -162,24 +195,6 @@ export default function TryOnExperience() {
           ))}
         </motion.div>
       </AnimatePresence>
-
-      <input
-        id={TRYON_GALLERY_INPUT_ID}
-        type="file"
-        accept="image/*"
-        className="sr-only"
-        tabIndex={-1}
-        onChange={(event) => onFile(event.target.files?.[0])}
-      />
-      <input
-        id={TRYON_CAMERA_INPUT_ID}
-        type="file"
-        accept="image/*"
-        capture="user"
-        className="sr-only"
-        tabIndex={-1}
-        onChange={(event) => onFile(event.target.files?.[0])}
-      />
 
       {lookSession ? (
         <TryOnSidebar

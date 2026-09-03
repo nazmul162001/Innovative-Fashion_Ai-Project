@@ -1,4 +1,4 @@
-const CACHE = 'inovative-shell-v1';
+const CACHE = 'inovative-shell-v2';
 const PRECACHE = ['/', '/manifest.webmanifest', '/favicon.svg', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {
@@ -18,6 +18,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  // Never cache service worker or HTML navigations from a stale shell forever —
+  // network-first keeps deploys fresh; cache is offline fallback only.
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request)
@@ -31,6 +33,26 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Hashed assets under /_astro/ are immutable — cache-first is ideal.
+  const immutable = url.pathname.startsWith('/_astro/') || /\.[a-f0-9]{8,}\.(js|css|woff2?)$/i.test(url.pathname);
+
+  if (immutable) {
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put(request, copy));
+          }
+          return response;
+        });
+      }),
+    );
+    return;
+  }
+
+  // Other same-origin GETs: stale-while-revalidate.
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request)

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
-import { unsplash } from '../lib/utils';
+import { unsplash, responsiveSrcSet } from '../lib/utils';
 
 const SLIDE_MS = 7000;
 const easeOut = [0.16, 1, 0.3, 1] as const;
@@ -108,7 +108,12 @@ export default function Hero() {
               <motion.img
                 key={slide.image}
                 src={slide.image}
+                srcSet={responsiveSrcSet(slide.image, [480, 720, 960])}
+                sizes="(max-width: 768px) 90vw, 480px"
                 alt=""
+                fetchPriority={index === 0 ? 'high' : 'auto'}
+                loading={index === 0 ? 'eager' : 'lazy'}
+                decoding="async"
                 initial={reduceMotion ? { opacity: 1 } : { opacity: 0, scale: 1.04 }}
                 animate={{ opacity: 1, scale: reduceMotion ? 1 : 1.08 }}
                 exit={{ opacity: 0, transition: { duration: 0.55, ease: easeIn } }}

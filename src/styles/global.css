@@ -80,6 +80,12 @@ body {
   contain-intrinsic-size: auto 420px;
 }
 
+/* Below-the-fold story sections — skip layout/paint until near viewport. */
+.cv-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 720px;
+}
+
 .dark-card-glow {
   background: #161b22;
   border: 1px solid rgba(255, 255, 255, 0.08);

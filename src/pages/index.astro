@@ -29,7 +29,8 @@ const category = Astro.url.searchParams.get('category') ?? 'all';
     })();
   </script>
   <Hero client:load />
-  <CollectionSection client:load initialCategory={category} />
+  <!-- Idle: collection is interactive but not LCP — hydrate after first paint. -->
+  <CollectionSection client:idle initialCategory={category} />
   <HowItWorks client:visible />
   <TryOnSpotlight client:visible />
   <ShopByIntent client:visible />
