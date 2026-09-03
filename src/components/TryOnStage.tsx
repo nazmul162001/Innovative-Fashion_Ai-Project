@@ -506,7 +506,7 @@ function PoseStep({
         Save your favorite, then start trying things on
       </h2>
 
-      <div className="mt-8 flex w-full max-w-4xl gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible" data-no-swipe-back>
+      <div className="mt-8 flex w-full max-w-4xl gap-3 overflow-x-auto pb-2 sm:grid sm:grid-cols-4 sm:overflow-visible">
         {AVATAR_POSES.map((pose) => (
           <PoseCard
             key={pose.id}

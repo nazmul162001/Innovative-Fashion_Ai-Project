@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import type { Product } from '../types/product';
 import ProductGallery from './ProductGallery';
 import ProductSelectionPanel from './ProductSelectionPanel';
@@ -9,6 +10,12 @@ interface ProductDetailProps {
 }
 
 export default function ProductDetail({ product, related }: ProductDetailProps) {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [product.id]);
+
   return (
     <div className="mx-auto box-border w-full min-w-0 max-w-7xl overflow-x-clip px-4 py-8 sm:px-5 md:px-6 md:py-12">
       <div className="grid min-w-0 w-full grid-cols-1 items-start gap-6 lg:grid-cols-2 lg:gap-8">

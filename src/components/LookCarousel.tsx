@@ -42,8 +42,6 @@ export default function LookCarousel({ collection, onSelect }: LookCarouselProps
         <div
           ref={scroller}
           className="no-scrollbar flex gap-4 overflow-x-auto px-4 pb-2 md:px-8"
-          data-horizontal-scroll
-          data-no-swipe-back
         >
           {collection.items.map((item) => (
             <motion.button

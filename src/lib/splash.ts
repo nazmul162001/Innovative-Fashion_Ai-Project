@@ -1,42 +1,53 @@
-const SESSION_KEY = 'if-home-visited';
-
 declare global {
   interface Window {
-    __ifSplashShown?: boolean;
-    __ifDocNavType?: string;
-    __ifOriginalPath?: string;
+    /** Splash currently displaying (survives React Strict Mode remount). */
+    __ifSplashPlaying?: boolean;
+    /** Splash already finished for this document lifetime. */
+    __ifSplashDone?: boolean;
+    /** Set after the first Astro page-load when a soft client nav happens. */
+    __ifAstroClientNav?: boolean;
+    __ifPageLoads?: number;
   }
 }
 
-export function rememberDocumentNav(): void {
-  if (typeof window === 'undefined') return;
-  window.__ifDocNavType ??= performance.getEntriesByType('navigation')[0]?.type;
-  window.__ifOriginalPath ??= window.location.pathname;
-}
-
+/**
+ * Show splash on every full load / reload of the home page.
+ * Skip only after it already finished, or on soft Astro client navigations.
+ */
 export function shouldPlaySplash(): boolean {
   if (typeof window === 'undefined') return false;
-  rememberDocumentNav();
-  if (window.__ifSplashShown) return false;
-  window.__ifSplashShown = true;
 
   const path = window.location.pathname;
   if (path !== '/' && path !== '') return false;
 
-  try {
-    const seen = sessionStorage.getItem(SESSION_KEY) === '1';
-    const reloadedThisPage =
-      window.__ifDocNavType === 'reload' && (window.__ifOriginalPath === '/' || window.__ifOriginalPath === '');
-    return !seen || reloadedThisPage;
-  } catch {
-    return false;
-  }
+  // Remount while splash is on screen (Strict Mode) — keep playing.
+  if (window.__ifSplashPlaying) return true;
+
+  // Already finished this page load.
+  if (window.__ifSplashDone) return false;
+
+  // Soft in-app navigation back to home — no splash.
+  if (window.__ifAstroClientNav) return false;
+
+  // Browser back/forward restore — no splash.
+  const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+  if (nav?.type === 'back_forward') return false;
+
+  return true;
 }
 
+export function markSplashStarted(): void {
+  if (typeof window === 'undefined') return;
+  window.__ifSplashPlaying = true;
+}
+
+export function markSplashEnded(): void {
+  if (typeof window === 'undefined') return;
+  window.__ifSplashPlaying = false;
+  window.__ifSplashDone = true;
+}
+
+/** @deprecated kept so older imports do not break */
 export function markHomeVisited(): void {
-  try {
-    sessionStorage.setItem(SESSION_KEY, '1');
-  } catch {
-    /* ignore */
-  }
+  /* no-op */
 }

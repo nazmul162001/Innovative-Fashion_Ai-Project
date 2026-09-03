@@ -1,38 +1,47 @@
 import { useLayoutEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { BRAND } from '../lib/brand';
-import { markHomeVisited, shouldPlaySplash } from '../lib/splash';
+import { markSplashEnded, markSplashStarted, shouldPlaySplash } from '../lib/splash';
 
 const wordmark = BRAND.name.toUpperCase();
 
 export default function SplashLoader() {
   const reduceMotion = useReducedMotion();
   const [play, setPlay] = useState(() => shouldPlaySplash());
+  const [mounted, setMounted] = useState(false);
+
+  useLayoutEffect(() => {
+    setMounted(true);
+  }, []);
 
   useLayoutEffect(() => {
     if (!play) {
       document.documentElement.classList.remove('if-splash');
       return;
     }
+    markSplashStarted();
     document.documentElement.classList.add('if-splash');
-    markHomeVisited();
 
     const hold = reduceMotion ? 600 : 2800;
     const hide = window.setTimeout(() => {
       setPlay(false);
+      markSplashEnded();
       document.documentElement.classList.remove('if-splash');
     }, hold);
     return () => window.clearTimeout(hide);
   }, [play, reduceMotion]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {play ? (
         <motion.div
           key="splash"
           role="status"
           aria-label="Loading Inovative Fashion"
-          className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[#0f1218]"
+          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden bg-[#0f1218]"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.04 }}
           transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
@@ -155,6 +164,7 @@ export default function SplashLoader() {
           </div>
         </motion.div>
       ) : null}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
